@@ -1,7 +1,5 @@
-import { set } from "immutable";
 import React, { useRef, useState } from "react";
 import Shapes from "./shapes";
-import { use } from "react";
 
 const ClickDrag = ({
   placedShapes,
