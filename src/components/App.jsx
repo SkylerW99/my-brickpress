@@ -3,6 +3,7 @@ import "../styles/index.css"
 import ClickDrag from './clickDrag'
 import Shapes from './shapes'
 import Print from './print'
+import SaveButton from './SaveButton'
 
 function App() {
 
@@ -20,7 +21,10 @@ function App() {
         cellSize={cellSize}
         setCellSize={setCellSize}
       />
-      <Print placedShapes={placedShapes} cellSize={cellSize} />
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <Print placedShapes={placedShapes} cellSize={cellSize} />
+        <SaveButton placedShapes={placedShapes} cellSize={cellSize} />
+      </div>
     </div>
   )
 }
