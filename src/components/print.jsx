@@ -2,15 +2,14 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import Shapes from "./shapes";
 
 function Print({ placedShapes, cellSize }) {
-  const [showPreview, setShowPreview] = useState(false);
   const [grain, setGrain] = useState(50);
   const [bleed, setBleed] = useState(1.5);
   const [bleedOpacity, setBleedOpacity] = useState(0.15);
+  const [distress, setDistress] = useState(0.3);
   const [bgColor, setBgColor] = useState("#ffd7d7");
   const [blockColors, setBlockColors] = useState("#667eea");
   const canvasRef = useRef(null);
-  const colorRef = useRef(null);
-  const blockColorRef = useRef(null);
+  const renderTimeoutRef = useRef(null);
 
   // Renders the design onto the canvas with current effect settings
   const renderCanvas = useCallback(() => {
@@ -85,7 +84,7 @@ function Print({ placedShapes, cellSize }) {
         for (let i = 0; i < 3; i++) {
           ctx.fillRect(x, y + stripeH * (i * 2), w, stripeH);
         }
-      } else if (shapeInfo.type === "heart") {
+      } else if (shapeType === "heart") {
         // Heart SVG path defined in a 24x24 viewBox — scale to target w × h
         const heartPath = new Path2D(
           "M12.8993 3.73386L11.9975 4.63704L11.0912 3.73167" +
@@ -121,7 +120,6 @@ function Print({ placedShapes, cellSize }) {
       ctx.globalAlpha = bleedOpacity;
       placedShapes.forEach((shape) => {
         const params = drawShapes(shape);
-        console.log("Drawing bleed for shape with params:", params);
         // offset for bleed
           drawShapePath({
             ...params,
@@ -145,7 +143,76 @@ function Print({ placedShapes, cellSize }) {
     });
     ctx.globalCompositeOperation = "source-over";
 
-    // 4. Grain noise — only on shape pixels, not background
+    // 4. Distressed grunge texture — simulates uneven ink coverage
+    if (distress > 0) {
+      const bgR = parseInt(bgColor.slice(1, 3), 16);
+      const bgG = parseInt(bgColor.slice(3, 5), 16);
+      const bgB = parseInt(bgColor.slice(5, 7), 16);
+
+      const imageData = ctx.getImageData(0, 0, size, size);
+      const d = imageData.data;
+
+      // Generate a low-frequency Perlin-like noise field using layered grids
+      // to create organic patches of missing ink
+      const gridSize = 16; // coarse patches
+      const grid2 = 32;    // medium patches
+      const grid3 = 64;    // fine patches
+
+      // Pre-compute random grids
+      const makeGrid = (s) => {
+        const cols = Math.ceil(size / s) + 2;
+        const rows = Math.ceil(size / s) + 2;
+        const g = [];
+        for (let i = 0; i < rows * cols; i++) g.push(Math.random());
+        return { data: g, cols };
+      };
+
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const smoothstep = (t) => t * t * (3 - 2 * t);
+
+      const sampleGrid = (grid, s, px, py) => {
+        const gx = px / s;
+        const gy = py / s;
+        const ix = Math.floor(gx);
+        const iy = Math.floor(gy);
+        const fx = smoothstep(gx - ix);
+        const fy = smoothstep(gy - iy);
+        const { data: g, cols } = grid;
+        const v00 = g[iy * cols + ix] || 0;
+        const v10 = g[iy * cols + ix + 1] || 0;
+        const v01 = g[(iy + 1) * cols + ix] || 0;
+        const v11 = g[(iy + 1) * cols + ix + 1] || 0;
+        return lerp(lerp(v00, v10, fx), lerp(v01, v11, fx), fy);
+      };
+
+      const g1 = makeGrid(gridSize);
+      const g2 = makeGrid(grid2);
+      const g3 = makeGrid(grid3);
+
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const i = (y * size + x) * 4;
+          // Skip background pixels
+          if (d[i] === bgR && d[i + 1] === bgG && d[i + 2] === bgB) continue;
+
+          // Blend multiple noise octaves for organic patches
+          const n = sampleGrid(g1, gridSize, x, y) * 0.5
+                  + sampleGrid(g2, grid2, x, y) * 0.3
+                  + sampleGrid(g3, grid3, x, y) * 0.2;
+
+          // Threshold: if noise is below distress level, fade pixel toward background
+          if (n < distress) {
+            const fade = n / distress; // 0 at fully distressed, 1 at edge
+            d[i]     = Math.round(lerp(bgR, d[i], fade));
+            d[i + 1] = Math.round(lerp(bgG, d[i + 1], fade));
+            d[i + 2] = Math.round(lerp(bgB, d[i + 2], fade));
+          }
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    // 5. Grain noise — only on shape pixels, not background
     if (grain > 0) {
       // Parse background color to RGB
       ctx.globalCompositeOperation = "multiply";
@@ -166,113 +233,94 @@ function Print({ placedShapes, cellSize }) {
       }
       ctx.putImageData(imageData, 0, 0);
     }
-  }, [placedShapes, cellSize, grain, bleed, bleedOpacity, bgColor, blockColors]);
+  }, [placedShapes, cellSize, grain, bleed, bleedOpacity, distress, bgColor, blockColors]);
 
-  // Re-render whenever settings change
+  // Debounced re-render: fires ~120ms after the last change to stay smooth during drags
   useEffect(() => {
-    if (showPreview) renderCanvas();
-  }, [showPreview, renderCanvas]);
-
-  // Native 'change' event for background color
-  useEffect(() => {
-    const el = colorRef.current;
-    if (!el) return;
-    const handleChange = (e) => setBgColor(e.target.value);
-    el.addEventListener("change", handleChange);
-    return () => el.removeEventListener("change", handleChange);
-  }, [showPreview]);
-
-  // Native 'change' event for block color
-  useEffect(() => {
-    const el = blockColorRef.current;
-    if (!el) return;
-    const handleChange = (e) => setBlockColors(e.target.value);
-    el.addEventListener("change", handleChange);
-    return () => el.removeEventListener("change", handleChange);
-  }, [showPreview]);
+    if (renderTimeoutRef.current) clearTimeout(renderTimeoutRef.current);
+    renderTimeoutRef.current = setTimeout(() => {
+      renderCanvas();
+    }, 120);
+    return () => clearTimeout(renderTimeoutRef.current);
+  }, [renderCanvas]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement("a");
-    link.download = "my-lego-design.png";
+    link.download = "my-brickpress-design.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
 
   return (
-    <>
-      <button className="button" onClick={() => setShowPreview(true)}>
-        Finish
-      </button>
+    <div className="print-panel animate-in animate-in-delay-1">
+      <h3 className="print-panel-title">Live Preview</h3>
 
-      {showPreview && (
-        <div className="preview-overlay" onClick={() => setShowPreview(false)}>
-          <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 12px" }}>Preview &amp; Adjust</h3>
+      <canvas
+        ref={canvasRef}
+        className="print-canvas"
+      />
 
-            <canvas
-              ref={canvasRef}
-              style={{ width: 600, height: 600, borderRadius: 8, border: "1px solid #444" }}
+      <div className="print-controls">
+        <div className="control-section">
+          <span className="control-section-label">Colors</span>
+          <label>
+            Background
+            <input
+              type="color" value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
             />
-
-            <div className="preview-controls">
-              <label>
-                Grain: {grain}
-                <input
-                  type="range" min="0" max="150" value={grain}
-                  onChange={(e) => setGrain(Number(e.target.value))}
-                />
-              </label>
-
-              <label>
-                Ink Bleed: {bleed.toFixed(1)}px
-                <input
-                  type="range" min="0" max="6" step="0.5" value={bleed}
-                  onChange={(e) => setBleed(Number(e.target.value))}
-                />
-              </label>
-
-              <label>
-                Bleed Opacity: {(bleedOpacity * 100).toFixed(0)}%
-                <input
-                  type="range" min="0" max="0.5" step="0.05" value={bleedOpacity}
-                  onChange={(e) => setBleedOpacity(Number(e.target.value))}
-                />
-              </label>
-
-                <label>
-                background color
-                <input
-                  type="color" value={bgColor}
-                  onChange={(e) => setBgColor(e.target.value)}
-                  style={{ marginLeft: 8, width: 40, height: 30, cursor: "pointer", border: "none" }}
-                />
-              </label>
-
-                <label>
-                Block color
-                <input
-                  type="color" value={blockColors}
-                  onChange={(e) => setBlockColors(e.target.value)}
-                  style={{ marginLeft: 8, width: 40, height: 30, cursor: "pointer", border: "none" }}
-                />
-              </label>
-
-            </div>
-
-            <div className="preview-buttons">
-              <button className="button" onClick={handleDownload}>
-                Download
-              </button>
-              <button className="button" onClick={() => setShowPreview(false)} style={{ backgroundColor: "#666" }}>
-                Back
-              </button>
-            </div>
-          </div>
+          </label>
+          <label>
+            Block Ink
+            <input
+              type="color" value={blockColors}
+              onChange={(e) => setBlockColors(e.target.value)}
+            />
+          </label>
         </div>
-      )}
-    </>
+
+        <div className="control-section">
+          <span className="control-section-label">Print Effects</span>
+          <label>
+            <span className="control-label-text">Grain <span className="control-value">{grain}</span></span>
+            <input
+              type="range" min="0" max="150" value={grain}
+              onChange={(e) => setGrain(Number(e.target.value))}
+            />
+          </label>
+
+          <label>
+            <span className="control-label-text">Ink Bleed <span className="control-value">{bleed.toFixed(1)}px</span></span>
+            <input
+              type="range" min="0" max="6" step="0.5" value={bleed}
+              onChange={(e) => setBleed(Number(e.target.value))}
+            />
+          </label>
+
+          <label>
+            <span className="control-label-text">Bleed Opacity <span className="control-value">{(bleedOpacity * 100).toFixed(0)}%</span></span>
+            <input
+              type="range" min="0" max="0.5" step="0.05" value={bleedOpacity}
+              onChange={(e) => setBleedOpacity(Number(e.target.value))}
+            />
+          </label>
+
+          <label>
+            <span className="control-label-text">Distress <span className="control-value">{(distress * 100).toFixed(0)}%</span></span>
+            <input
+              type="range" min="0" max="0.8" step="0.05" value={distress}
+              onChange={(e) => setDistress(Number(e.target.value))}
+            />
+          </label>
+        </div>
+      </div>
+
+      <button className="button download-btn" onClick={handleDownload}>
+        ⬇ Download PNG
+      </button>
+    </div>
   );
 }
 

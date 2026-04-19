@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-function SaveButton({ placedShapes, cellSize }) {
+function SaveButton({ placedShapes, cellSize, drawingId, drawingName, userId, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -16,15 +16,30 @@ function SaveButton({ placedShapes, cellSize }) {
     setSaving(true);
     setSaveMessage('');
     try {
-      const docRef = await addDoc(collection(db, 'drawings'), {
-        placedShapes,
-        cellSize,
-        createdAt: serverTimestamp(),
-        name: `Drawing ${new Date().toLocaleDateString()}`,
-      });
-      setSaveMessage(`Saved! (ID: ${docRef.id})`);
+      if (drawingId) {
+        // Update existing drawing
+        await setDoc(doc(db, 'drawings', drawingId), {
+          placedShapes,
+          cellSize,
+          updatedAt: serverTimestamp(),
+          userId,
+          name: drawingName || `Drawing ${new Date().toLocaleDateString()}`,
+        }, { merge: true });
+        setSaveMessage('Updated!');
+      } else {
+        // Create new drawing
+        const name = `Drawing ${new Date().toLocaleDateString()}`;
+        const docRef = await addDoc(collection(db, 'drawings'), {
+          placedShapes,
+          cellSize,
+          createdAt: serverTimestamp(),
+          userId,
+          name,
+        });
+        onSaved(docRef.id, name);
+        setSaveMessage(`Saved!`);
+      }
       setTimeout(() => setSaveMessage(''), 3000);
-      console.log(saveMessage);
     } catch (error) {
       console.error('Error saving:', error);
       setSaveMessage('Failed to save. Try again.');
@@ -36,10 +51,10 @@ function SaveButton({ placedShapes, cellSize }) {
   return (
     <>
       <button className="button" onClick={handleSave} disabled={saving}>
-        {saving ? 'Saving...' : 'Save'}
+        {saving ? 'Saving...' : '💾 Save'}
       </button>
       {saveMessage && (
-        <p style={{ color: saveMessage.includes('Failed') ? '#ff6b6b' : '#69db7c', margin: '8px 0' }}>
+        <p className={`save-msg ${saveMessage.includes('Failed') ? 'error' : 'success'}`}>
           {saveMessage}
         </p>
       )}
