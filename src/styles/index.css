@@ -964,9 +964,12 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
   gap: var(--space-xl);
   padding: var(--space-2xl);
+  box-sizing: border-box;
 }
 
 .login-brand {
