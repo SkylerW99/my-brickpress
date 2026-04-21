@@ -1,13 +1,20 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Shapes from "./shapes";
 
-function Print({ placedShapes, cellSize }) {
-  const [grain, setGrain] = useState(50);
-  const [bleed, setBleed] = useState(1.5);
-  const [bleedOpacity, setBleedOpacity] = useState(0.15);
-  const [distress, setDistress] = useState(0.3);
-  const [bgColor, setBgColor] = useState("#ffd7d7");
-  const [blockColors, setBlockColors] = useState("#667eea");
+function Print({ placedShapes, cellSize, printSettings, onSettingsChange }) {
+  const [grain, setGrain] = useState(printSettings?.grain ?? 50);
+  const [bleed, setBleed] = useState(printSettings?.bleed ?? 1.5);
+  const [bleedOpacity, setBleedOpacity] = useState(printSettings?.bleedOpacity ?? 0.15);
+  const [distress, setDistress] = useState(printSettings?.distress ?? 0.3);
+  const [bgColor, setBgColor] = useState(printSettings?.bgColor ?? "#ffd7d7");
+  const [blockColors, setBlockColors] = useState(printSettings?.blockColors ?? "#667eea");
+
+  // Notify parent whenever any setting changes
+  useEffect(() => {
+    if (onSettingsChange) {
+      onSettingsChange({ grain, bleed, bleedOpacity, distress, bgColor, blockColors });
+    }
+  }, [grain, bleed, bleedOpacity, distress, bgColor, blockColors]);
   const canvasRef = useRef(null);
   const renderTimeoutRef = useRef(null);
 
@@ -57,7 +64,13 @@ function Print({ placedShapes, cellSize }) {
       ctx.translate(-pivotX, -pivotY);
 
       ctx.beginPath();
-      if (shapeType === "QuarterCircle") {
+      if (shapeType === "circle") {
+        // Use arc — canvas can't interpret "50%" border-radius
+        const r = Math.min(w, h) / 2;
+        ctx.arc(x + r, y + r, r, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      } else if (shapeType === "QuarterCircle") {
         const r = w;
         ctx.moveTo(x, y);
         ctx.arc(x, y, r, 0, Math.PI / 2);

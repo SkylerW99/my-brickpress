@@ -196,6 +196,7 @@ button:focus-visible {
   position: relative;
   top: 0;
   letter-spacing: 0.03em;
+  align-self: flex-start;
 }
 
 .button-secondary:hover {
@@ -869,11 +870,21 @@ button:focus-visible {
   margin-bottom: var(--space-sm);
 }
 
+
+.gallery-container {
+  display: flex;
+  margin: 40px ;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-xs);
+  gap: var(--space-sm);
+}
+
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--space-lg);
-  width: min(100%, 860px);
+  width: min(100%, 1200px);
   padding: var(--space-xs);
 }
 

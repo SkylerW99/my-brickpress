@@ -45,7 +45,7 @@ function Gallery({ onLoad, userId }) {
 
   // Load a drawing into the editor
   const handleLoad = (drawing) => {
-    onLoad(drawing.id, drawing.name, drawing.placedShapes, drawing.cellSize);
+    onLoad(drawing.id, drawing.name, drawing.placedShapes, drawing.cellSize, drawing.printSettings || null);
     navigate('/');
   };
 
@@ -59,22 +59,16 @@ function Gallery({ onLoad, userId }) {
         <h2 className="title">Gallery</h2>
       </div>
 
-      <button className="button-secondary animate-in animate-in-delay-1" onClick={() => navigate('/')} style={{ marginBottom: '8px' }}>
-        ← Back to Editor
-      </button>
+      <div className="gallery-container">
+        <button className="button-secondary gallery-back-btn animate-in animate-in-delay-1" onClick={() => navigate('/')}>
+          ← Back to Editor
+        </button>
 
-      {drawings.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No saved drawings yet.</p>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
-          gap: '20px',
-          width: '80%',
-          maxWidth: '800px',
-          padding: '4px',
-        }}>
-          {drawings.map((drawing, idx) => (
+        {drawings.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No saved drawings yet.</p>
+        ) : (
+          <div className="gallery-grid">
+            {drawings.map((drawing, idx) => (
             <div
               key={drawing.id}
               className="gallery-card animate-in"
@@ -83,7 +77,7 @@ function Gallery({ onLoad, userId }) {
               <DrawingThumbnail
                 placedShapes={drawing.placedShapes || []}
                 cellSize={drawing.cellSize || 20}
-                thumbSize={180}
+                printSettings={drawing.printSettings || null}
               />
               <p style={{ margin: 0, fontWeight: 700, fontSize: '14px', color: 'var(--text-dark)' }}>
                 {drawing.name || 'Untitled'}
@@ -114,8 +108,9 @@ function Gallery({ onLoad, userId }) {
               </div>
             </div>
           ))}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

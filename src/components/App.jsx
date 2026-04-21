@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import "../styles/index.css"
 import ClickDrag from './clickDrag'
-import Shapes from './shapes'
 import Print from './print'
-import SaveButton from './SaveButton'
 import Gallery from './Gallery'
 import Login from './Login'
 import { onAuthChange, logOut } from '../auth'
+import { db } from '../firebase'
+import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 function App() {
 
@@ -18,6 +18,9 @@ function App() {
   const [currentDrawingId, setCurrentDrawingId] = useState(null);
   const [currentDrawingName, setCurrentDrawingName] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [blockColor, setBlockColor] = useState('oklch(0.62 0.12 270)');
+  const [printSettings, setPrintSettings] = useState(null);
+  const savingRef = useRef(false);
   const navigate = useNavigate();
 
   // Listen for auth state changes
@@ -29,7 +32,60 @@ function App() {
     return unsubscribe;
   }, []);
 
+  const autoSaveDrawing = useCallback(async () => {
+    if (!user || placedShapes.length === 0 || savingRef.current) return;
+
+    savingRef.current = true;
+    try {
+      if (currentDrawingId) {
+        await setDoc(doc(db, 'drawings', currentDrawingId), {
+          placedShapes,
+          cellSize,
+          printSettings: printSettings || {},
+          updatedAt: serverTimestamp(),
+          userId: user.uid,
+          name: currentDrawingName || `Drawing ${new Date().toLocaleDateString()}`,
+        }, { merge: true });
+      } else {
+        const name = currentDrawingName || `Drawing ${new Date().toLocaleDateString()}`;
+        const docRef = await addDoc(collection(db, 'drawings'), {
+          placedShapes,
+          cellSize,
+          printSettings: printSettings || {},
+          createdAt: serverTimestamp(),
+          userId: user.uid,
+          name,
+        });
+        setCurrentDrawingId(docRef.id);
+        setCurrentDrawingName(name);
+      }
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    } finally {
+      savingRef.current = false;
+    }
+  }, [user, placedShapes, cellSize, printSettings, currentDrawingId, currentDrawingName]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      autoSaveDrawing();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [autoSaveDrawing]);
+
+  // Debounced auto-save whenever print settings change
+  useEffect(() => {
+    if (!printSettings || !currentDrawingId) return;
+    const timer = setTimeout(() => {
+      autoSaveDrawing();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [printSettings]);
+
   const handleSignOut = async () => {
+    await autoSaveDrawing();
     await logOut();
     setPlacedShapes([]);
     setCurrentDrawingId(null);
@@ -37,19 +93,26 @@ function App() {
   };
 
   // Load a saved drawing into the editor
-  const handleLoadDrawing = (id, name, shapes, savedCellSize) => {
+  const handleLoadDrawing = (id, name, shapes, savedCellSize, savedPrintSettings) => {
     setCurrentDrawingId(id);
     setCurrentDrawingName(name);
     setPlacedShapes(shapes);
     setCellSize(savedCellSize);
+    if (savedPrintSettings) setPrintSettings(savedPrintSettings);
   };
 
   // Start a new blank drawing
-  const handleNewDrawing = () => {
+  const handleNewDrawing = async () => {
+    await autoSaveDrawing();
     setCurrentDrawingId(null);
     setCurrentDrawingName(null);
     setPlacedShapes([]);
     setCellSize(20);
+  };
+
+  const handleOpenGallery = async () => {
+    await autoSaveDrawing();
+    navigate('/gallery');
   };
 
   if (authLoading) {
@@ -76,18 +139,10 @@ function App() {
                 {currentDrawingName ? `Editing: ${currentDrawingName}` : 'New Drawing'}
               </p>
               <div className="toolbar-compact">
-                <SaveButton
-                  placedShapes={placedShapes}
-                  cellSize={cellSize}
-                  drawingId={currentDrawingId}
-                  drawingName={currentDrawingName}
-                  userId={user.uid}
-                  onSaved={(id, name) => { setCurrentDrawingId(id); setCurrentDrawingName(name); }}
-                />
                 <button className="button-secondary" onClick={handleNewDrawing}>
                   New
                 </button>
-                <button className="button-secondary" onClick={() => navigate('/gallery')}>
+                <button className="button-secondary" onClick={handleOpenGallery}>
                   Gallery
                 </button>
                 <button
@@ -118,7 +173,12 @@ function App() {
               />
             </div>
             <div className="editor-right">
-              <Print placedShapes={placedShapes} cellSize={cellSize} />
+              <Print
+                placedShapes={placedShapes}
+                cellSize={cellSize}
+                printSettings={printSettings}
+                onSettingsChange={setPrintSettings}
+              />
             </div>
           </div>
 
@@ -132,7 +192,12 @@ function App() {
                   </button>
                 </div>
                 <div className="preview-modal-body">
-                  <Print placedShapes={placedShapes} cellSize={cellSize} />
+                  <Print
+                    placedShapes={placedShapes}
+                    cellSize={cellSize}
+                    printSettings={printSettings}
+                    onSettingsChange={setPrintSettings}
+                  />
                 </div>
               </div>
             </div>
