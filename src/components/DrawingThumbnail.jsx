@@ -27,8 +27,8 @@ function DrawingThumbnail({ placedShapes, cellSize, thumbSize, printSettings }) 
   const bleed        = printSettings?.bleed        ?? 1.5;
   const bleedOpacity = printSettings?.bleedOpacity ?? 0.15;
   const distress     = printSettings?.distress     ?? 0.3;
-  const bgColor      = printSettings?.bgColor      ?? '#ffffff';
-  const blockColors  = printSettings?.blockColors  ?? '#667eea';
+  const bgColor      = printSettings?.bgColor      ?? '#f5f2eb';
+  const blockColors  = printSettings?.blockColors  ?? '#c9a84e';
 
   const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;

@@ -18,7 +18,6 @@ function App() {
   const [currentDrawingId, setCurrentDrawingId] = useState(null);
   const [currentDrawingName, setCurrentDrawingName] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [blockColor, setBlockColor] = useState('oklch(0.62 0.12 270)');
   const [printSettings, setPrintSettings] = useState(null);
   const savingRef = useRef(false);
   const navigate = useNavigate();
@@ -169,7 +168,7 @@ function App() {
                 setPlacedShapes={setPlacedShapes}
                 cellSize={cellSize}
                 setCellSize={setCellSize}
-                blockColor={blockColor}
+                blockColor={printSettings?.blockColors ?? '#c98a4f'}
               />
             </div>
             <div className="editor-right">

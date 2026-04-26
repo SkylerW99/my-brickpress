@@ -5,35 +5,37 @@
 
 /* --- Custom Properties --- */
 :root {
-  /* Kraft-paper palette (OKLCH) */
-  --bg-cream: oklch(0.935 0.018 72);
-  --bg-warm: oklch(0.905 0.023 70);
-  --bg-panel: oklch(0.875 0.028 68);
-  --text-dark: oklch(0.24 0.045 48);
-  --text-mid: oklch(0.42 0.04 50);
-  --text-muted: oklch(0.56 0.035 52);
+  /* Retro Gold palette (OKLCH) */
+  --bg-cream: oklch(0.11 0.01 60);
+  --bg-warm: oklch(0.14 0.012 60);
+  --bg-panel: oklch(0.18 0.014 60);
+  --text-dark: oklch(0.91 0.012 80);
+  --text-mid: oklch(0.72 0.018 76);
+  --text-muted: oklch(0.52 0.016 75);
 
-  /* Printshop inks */
-  --ink-red: oklch(0.55 0.155 38);
-  --ink-red-hover: oklch(0.49 0.145 36);
-  --ink-red-active: oklch(0.43 0.135 34);
-  --ink-green: oklch(0.48 0.1 155);
-  --ink-green-hover: oklch(0.42 0.09 153);
-  --ink-teal: oklch(0.52 0.08 192);
-  --ink-blue: oklch(0.48 0.1 252);
-  --block-color: oklch(0.62 0.12 270);
+  /* Gold print inks */
+  --ink-red: oklch(0.76 0.17 82);
+  --ink-red-hover: oklch(0.71 0.16 82);
+  --ink-red-active: oklch(0.48 0.17 82);
+  --accent-shadow: oklch(0.48 0.17 82);
+  --ink-green: oklch(0.52 0.08 150);
+  --ink-green-hover: oklch(0.46 0.07 150);
+  --ink-teal: oklch(0.48 0.05 200);
+  --ink-blue: oklch(0.53 0.07 255);
+  --block-color: oklch(70.561% 0.14106 62.766);
+  --riso: rgba(220, 60, 180, 0.4);
 
   /* Surfaces */
-  --surface-card: oklch(0.955 0.013 72);
-  --surface-canvas: oklch(0.97 0.008 75);
-  --border-light: oklch(0.82 0.032 66);
-  --border-medium: oklch(0.70 0.038 58);
+  --surface-card: oklch(0.16 0.012 60);
+  --surface-canvas: oklch(0.95 0.013 88);
+  --border-light: oklch(0.29 0.016 60);
+  --border-medium: oklch(0.36 0.02 62);
 
-  /* Shadows - warm-tinted */
-  --shadow-sm: 0 1px 3px rgba(55, 35, 18, 0.07);
-  --shadow-md: 0 4px 14px rgba(55, 35, 18, 0.09);
-  --shadow-lg: 0 10px 32px rgba(55, 35, 18, 0.13);
-  --shadow-stamp: 0 4px 0 rgba(55, 35, 18, 0.2);
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.38);
+  --shadow-stamp: 0 4px 0 var(--ink-red-active);
 
   /* Spacing scale (4pt) */
   --space-xs: 4px;
@@ -49,11 +51,11 @@
   --radius-lg: 14px;
 
   /* Typography */
-  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   line-height: 1.6;
   font-weight: 500;
 
-  color-scheme: light;
+  color-scheme: dark;
   color: var(--text-dark);
   background-color: var(--bg-cream);
 
@@ -71,6 +73,15 @@ body {
   background-color: var(--bg-cream);
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  color: var(--text-dark);
+}
+
+.small-text{
+  font-size: 12px !important;
+  color: var(--text-muted) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* --- Links --- */
@@ -120,12 +131,11 @@ button {
   padding: 0.55em 1.15em;
   font-size: 0.95em;
   font-weight: 700;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   background-color: var(--surface-card);
   color: var(--text-dark);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.33, 1, 0.68, 1);
-  box-shadow: var(--shadow-stamp);
   position: relative;
   top: 0;
 }
@@ -153,18 +163,18 @@ button:focus-visible {
   padding: 0.55em 1.3em;
   font-size: 0.95em;
   font-weight: 700;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   border: 2px solid transparent;
   border-radius: var(--radius-md);
   background-color: var(--ink-red);
   color: oklch(0.96 0.012 72);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.33, 1, 0.68, 1);
-  box-shadow: 0 4px 0 var(--ink-red-active), var(--shadow-sm);
   position: relative;
   top: 0;
   letter-spacing: 0.03em;
   text-shadow: 0 1px 2px rgba(55, 35, 18, 0.15);
+  box-shadow: var(--shadow-stamp);
 }
 
 .button:hover {
@@ -185,14 +195,13 @@ button:focus-visible {
   padding: 0.55em 1.3em;
   font-size: 0.95em;
   font-weight: 700;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   border: 2px solid var(--border-medium);
   border-radius: var(--radius-md);
   background-color: var(--surface-card);
   color: var(--text-dark);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.33, 1, 0.68, 1);
-  box-shadow: var(--shadow-stamp);
   position: relative;
   top: 0;
   letter-spacing: 0.03em;
@@ -217,10 +226,10 @@ button:focus-visible {
   padding: 0.55em 1.3em;
   font-size: 0.95em;
   font-weight: 700;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   border: 2px solid transparent;
   border-radius: var(--radius-md);
-  background-color: oklch(0.48 0.15 25);
+  background-color: oklch(62.259% 0.15708 22.744);
   color: oklch(0.96 0.012 72);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.33, 1, 0.68, 1);
@@ -274,7 +283,7 @@ button:focus-visible {
   background: var(--surface-card);
   border-radius: var(--radius-md);
   box-sizing: border-box;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 3px 3px 0 var(--border-light), var(--shadow-sm);
   border: 1.5px solid var(--border-light);
 }
 
@@ -345,16 +354,35 @@ button:focus-visible {
   width: 100%;
   aspect-ratio: 1 / 1;
   max-height: 80vh;
-  border: 3px solid var(--border-medium);
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  background-color: var(--surface-canvas);
+  background-color: var(--bg-panel);
   box-shadow:
-    var(--shadow-lg),
-    inset 0 0 60px rgba(55, 35, 18, 0.03);
+    5px 5px 0 var(--border-light),
+    var(--shadow-md),
+    inset 0 0 60px rgba(0, 0, 0, 0.06),
+    inset 0 0 12px rgba(0, 0, 0, 0.04);
+  /* Subtle grid — kept faint so stud dots read as the primary surface texture 
   background-size: calc(100% / 16) calc(100% / 16);
   background-image:
-    linear-gradient(to right, oklch(0.24 0.04 48 / 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.24 0.04 48 / 0.07) 1px, transparent 1px);
+    linear-gradient(to right, rgba(160, 148, 120, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(160, 148, 120, 0.4) 1px, transparent 1px);
+     */
+}
+
+/* Lego stud grid overlay — 2.6 px radius dots on 20 px grid, z-index 9998.
+   Warm-brown fill at low opacity renders the stud topology on the light canvas
+   (spec says rgba(255,255,255,0.025) — that's for dark-bg previews; on cream
+   we need a darker tint to keep the dots perceptible). */
+.canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='0' cy='0' r='3' fill='rgba(228%2C220%2C200%2C0.15)'/%3E%3C/svg%3E");
+  background-size: calc(100% / 16) calc(100% / 16);
+  border-radius: inherit;
 }
 
 /* ============================================================
@@ -395,7 +423,7 @@ button:focus-visible {
   color: var(--ink-red);
   margin: 0;
   letter-spacing: 0.01em;
-  text-shadow: 2px 2px 0 oklch(0.55 0.155 38 / 0.12);
+  text-shadow: -3px -2px 0 rgba(220, 60, 180, 0.4), 3px 3px 0 var(--accent-shadow);
   white-space: nowrap;
   position: relative;
 }
@@ -572,6 +600,7 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  margin-top:12px;
 }
 
 .title h2 {
@@ -580,7 +609,7 @@ button:focus-visible {
   color: var(--ink-red);
   margin: 0;
   letter-spacing: 0.01em;
-  text-shadow: 2px 2px 0 oklch(0.55 0.155 38 / 0.12);
+  text-shadow: -3px -2px 0 rgba(220, 60, 180, 0.4), 3px 3px 0 var(--accent-shadow);
 }
 
 /* ============================================================
@@ -603,6 +632,7 @@ button:focus-visible {
   margin: 0;
   letter-spacing: 0.01em;
   text-align: center;
+  text-shadow: none;
 }
 
 .print-canvas {
@@ -812,7 +842,7 @@ button:focus-visible {
 }
 
 .multi-select-count {
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   font-size: 12px;
   font-weight: 700;
   color: var(--ink-red);
@@ -821,7 +851,7 @@ button:focus-visible {
 
 /* Shape context buttons (delete / rotate) */
 .shape-action-btn {
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   font-size: 12px;
   font-weight: 700;
   padding: 4px 10px;
@@ -986,7 +1016,7 @@ button:focus-visible {
   color: var(--ink-red);
   margin: 0;
   letter-spacing: 0.02em;
-  text-shadow: 3px 3px 0 oklch(0.55 0.155 38 / 0.12);
+  text-shadow: -3px -2px 0 rgba(220, 60, 180, 0.4), 3px 3px 0 var(--accent-shadow);
   line-height: 1.1;
 }
 
@@ -995,7 +1025,6 @@ button:focus-visible {
   color: var(--text-muted);
   margin: 0;
   font-weight: 600;
-  font-style: italic;
 }
 
 .login-card {
@@ -1013,12 +1042,20 @@ button:focus-visible {
   position: relative;
 }
 
+.login-card.small{
+padding: 8px;
+margin-bottom: 12px;
+border-radius: var(--radius-sm);
+background:none;
+width:fit-content;
+};
+
 /* Registration marks - like printer crop marks */
 .login-card::before,
 .login-card::after {
   content: '+';
   position: absolute;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   font-size: 14px;
   color: var(--border-medium);
   opacity: 0.45;

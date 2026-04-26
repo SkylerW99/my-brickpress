@@ -20,6 +20,11 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-brand animate-in">
+        <div className="login-card small">
+        <p className="small-text">
+          ANALOG PRINTMAKING
+        </p>
+        </div>
         <h1>Brickpress</h1>
         <div className="divider" style={{ width: '40px', background: 'var(--ink-red)', opacity: 0.4 }}></div>
         <p>
@@ -38,7 +43,7 @@ function Login() {
           disabled={loading}
           style={{ fontSize: '15px', padding: '12px 28px', width: '100%' }}
         >
-          {loading ? 'Signing in...' : '🧱 Sign in with Google'}
+          {loading ? 'Signing in...' : 'Sign in with Google'}
         </button>
 
         {error && (

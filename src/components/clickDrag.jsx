@@ -317,68 +317,46 @@ const ClickDrag = ({
     // Helper component for rendering the SVG content of special shapes like Arc and heart
   // These must match the canvas-drawn shapes in print.jsx exactly.
   const renderShapeContent = (shapeInfo, size) => {
-    // Arc: quarter-circle arc stroke from top-left corner, 0 to PI/2
-    // Matches print.jsx: ctx.arc(x, y, r, 0, Math.PI / 2) with stroke
     if (shapeInfo.type === "Arc") {
       const strokeW = shapeInfo.strokeWidth;
       const r = size.width / 2 + strokeW / 2;
-      // Arc centered at (0,0): from (r, 0) clockwise to (0, r)
       return (
         <svg width={size.width} height={size.height} viewBox={`0 0 ${size.width} ${size.height}`} style={{ position: 'absolute', top: 0, left: 0 }}>
           <path
             d={`M ${r} 0 A ${r} ${r} 0 0 1 0 ${r}`}
             fill="none"
-            stroke={blockColor}
+            stroke="var(--block-color)"
             strokeWidth={strokeW}
           />
         </svg>
       );
     }
-    // Heart: uses the same 24x24 viewBox SVG path as print.jsx
     if (shapeInfo.type === "heart") {
       return (
         <svg viewBox="0 0 24 24" width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
           <path
-            d={
-              "M12.8993 3.73386L11.9975 4.63704L11.0912 3.73167" +
-              "C9.98254 2.62417 8.4789 2.00205 6.91108 2.00215" +
-              "C5.34326 2.00226 3.8397 2.62458 2.73115 3.73221" +
-              "C1.62261 4.83985 0.999897 6.34207 1 7.9084" +
-              "C1.0001 9.47474 1.62302 10.9769 2.7317 12.0844" +
-              "L11.4146 20.759C11.5692 20.9133 11.7789 21 11.9975 21" +
-              "C12.216 21 12.4257 20.9133 12.5804 20.759" +
-              "L21.2709 12.0822C22.3783 10.9744 23.0002 9.47282 23 7.90724" +
-              "C22.9998 6.34166 22.3775 4.8402 21.2698 3.73276" +
-              "C20.7203 3.18343 20.0679 2.74766 19.3498 2.45035" +
-              "C18.6316 2.15303 17.8619 2 17.0846 2" +
-              "C16.3072 2 15.5375 2.15303 14.8194 2.45035" +
-              "C14.1012 2.74766 13.4488 3.18453 12.8993 3.73386Z"
-            }
-            fill={blockColor}
+            d={"M12.8993 3.73386L11.9975 4.63704L11.0912 3.73167C9.98254 2.62417 8.4789 2.00205 6.91108 2.00215C5.34326 2.00226 3.8397 2.62458 2.73115 3.73221C1.62261 4.83985 0.999897 6.34207 1 7.9084C1.0001 9.47474 1.62302 10.9769 2.7317 12.0844L11.4146 20.759C11.5692 20.9133 11.7789 21 11.9975 21C12.216 21 12.4257 20.9133 12.5804 20.759L21.2709 12.0822C22.3783 10.9744 23.0002 9.47282 23 7.90724C22.9998 6.34166 22.3775 4.8402 21.2698 3.73276C20.7203 3.18343 20.0679 2.74766 19.3498 2.45035C18.6316 2.15303 17.8619 2 17.0846 2C16.3072 2 15.5375 2.15303 14.8194 2.45035C14.1012 2.74766 13.4488 3.18453 12.8993 3.73386Z"}
+            fill="var(--block-color)"
           />
         </svg>
       );
     }
-    // stripedRect: 3 vertical stripes, each w/5 wide, with w/5 gaps
-    // Matches print.jsx: stripeW = w/5, stripes at x+0, x+2*stripeW, x+4*stripeW
     if (shapeInfo.type === "stripedRect") {
       const stripeW = size.width / 5;
       return (
         <svg width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
           {[0, 1, 2].map((i) => (
-            <rect key={i} x={stripeW * (i * 2)} y={0} width={stripeW} height={size.height} fill={blockColor} />
+            <rect key={i} x={stripeW * (i * 2)} y={0} width={stripeW} height={size.height} fill="var(--block-color)" />
           ))}
         </svg>
       );
     }
-    // stripedRect_2: 3 horizontal stripes, each h/5 tall, with h/5 gaps
-    // Matches print.jsx: stripeH = h/5, stripes at y+0, y+2*stripeH, y+4*stripeH
     if (shapeInfo.type === "stripedRect_2") {
       const stripeH = size.height / 5;
       return (
         <svg width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
           {[0, 1, 2].map((i) => (
-            <rect key={i} x={0} y={stripeH * (i * 2)} width={size.width} height={stripeH} fill={blockColor} />
+            <rect key={i} x={0} y={stripeH * (i * 2)} width={size.width} height={stripeH} fill="var(--block-color)" />
           ))}
         </svg>
       );
