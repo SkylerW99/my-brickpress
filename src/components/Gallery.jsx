@@ -81,9 +81,116 @@ function EditableName({ id, name, onRename }) {
   );
 }
 
+function DeleteConfirmModal({ onConfirm, onCancel }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.62)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}
+      onClick={onCancel}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'var(--surface-card)',
+          border: '1.5px solid var(--border-medium)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: '32px 28px 24px',
+          width: 320,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0,
+          fontFamily: 'inherit',
+        }}
+      >
+        {/* Icon */}
+        <div style={{
+          width: 44, height: 44,
+          borderRadius: '50%',
+          background: 'oklch(0.20 0.02 60)',
+          border: '1.5px solid var(--border-medium)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 16,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </div>
+
+        <p style={{
+          margin: '0 0 6px',
+          fontSize: '15px',
+          fontWeight: 700,
+          color: 'var(--text-dark)',
+          letterSpacing: '0.01em',
+        }}>
+          Delete drawing?
+        </p>
+        <p style={{
+          margin: '0 0 24px',
+          fontSize: '13px',
+          color: 'var(--text-muted)',
+          lineHeight: 1.5,
+        }}>
+          This can't be undone. The drawing will be permanently removed from your gallery.
+        </p>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={onCancel}
+            style={{
+              flex: 1,
+              padding: '9px 0',
+              borderRadius: 'var(--radius-sm)',
+              border: '1.5px solid var(--border-medium)',
+              background: 'transparent',
+              color: 'var(--text-mid)',
+              fontSize: '13px',
+              fontWeight: 600,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'background 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-panel)'; e.currentTarget.style.color = 'var(--text-dark)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-mid)'; }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              flex: 1,
+              padding: '9px 0',
+              borderRadius: 'var(--radius-sm)',
+              border: 'none',
+              background: 'var(--ink-red)',
+              color: 'oklch(0.11 0.01 60)',
+              fontSize: '13px',
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--ink-red-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--ink-red)'}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Gallery({ onLoad, userId }) {
   const [drawings, setDrawings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const navigate = useNavigate();
 
   // Fetch only this user's drawings from Firestore
@@ -121,7 +228,12 @@ function Gallery({ onLoad, userId }) {
 
   // Delete a drawing from Firestore
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this drawing?')) return;
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     try {
       await deleteDoc(doc(db, 'drawings', id));
       setDrawings((prev) => prev.filter((d) => d.id !== id));
@@ -129,6 +241,8 @@ function Gallery({ onLoad, userId }) {
       console.error('Error deleting:', error);
     }
   };
+
+  const cancelDelete = () => setDeleteTarget(null);
 
   // Load a drawing into the editor
   const handleLoad = (drawing) => {
@@ -142,6 +256,9 @@ function Gallery({ onLoad, userId }) {
 
   return (
     <div className="App">
+      {deleteTarget && (
+        <DeleteConfirmModal onConfirm={confirmDelete} onCancel={cancelDelete} />
+      )}
       <div className="title animate-in">
         <h2 className="title">Gallery</h2>
       </div>

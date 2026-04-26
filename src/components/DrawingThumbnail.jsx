@@ -49,8 +49,10 @@ function DrawingThumbnail({ placedShapes, cellSize, thumbSize, printSettings }) 
       const shapeInfo = shapes[shape.type];
       if (!shapeInfo) return null;
       ctx.fillStyle = blockColors;
-      const x = (shape.x / cellSize) * CELL;
-      const y = (shape.y / cellSize) * CELL;
+      const cellX = shape.cellX ?? (shape.x / cellSize);
+      const cellY = shape.cellY ?? (shape.y / cellSize);
+      const x = cellX * CELL;
+      const y = cellY * CELL;
       const w = (shapeInfo.width / cellSize) * CELL;
       const h = (shapeInfo.height / cellSize) * CELL;
       return { x, y, w, h, radius: shapeInfo.borderRadius, rotation: shape.rotation || 0, shapeType: shapeInfo.type, strokeWidth: shapeInfo.strokeWidth };

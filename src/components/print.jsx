@@ -38,8 +38,10 @@ function Print({ placedShapes, cellSize, printSettings, onSettingsChange }) {
     function drawShapes(shape) {
         const shapeInfo = shapes[shape.type];
         ctx.fillStyle = blockColors;
-        const x = (shape.x / cellSize) * CELL;
-        const y = (shape.y / cellSize) * CELL;
+        const cellX = shape.cellX ?? (shape.x / cellSize);
+        const cellY = shape.cellY ?? (shape.y / cellSize);
+        const x = cellX * CELL;
+        const y = cellY * CELL;
         const w = (shapeInfo.width / cellSize) * CELL;
         const h = (shapeInfo.height / cellSize) * CELL;
         const radius = shapeInfo.borderRadius;

@@ -95,7 +95,13 @@ function App() {
   const handleLoadDrawing = (id, name, shapes, savedCellSize, savedPrintSettings) => {
     setCurrentDrawingId(id);
     setCurrentDrawingName(name);
-    setPlacedShapes(shapes);
+    // Migrate old format (x/y in pixels) to new format (cellX/cellY in grid units)
+    const migratedShapes = shapes.map((s) =>
+      s.cellX !== undefined
+        ? s
+        : { ...s, cellX: Math.round(s.x / savedCellSize), cellY: Math.round(s.y / savedCellSize) }
+    );
+    setPlacedShapes(migratedShapes);
     setCellSize(savedCellSize);
     if (savedPrintSettings) setPrintSettings(savedPrintSettings);
   };

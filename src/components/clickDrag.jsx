@@ -5,8 +5,7 @@ const ClickDrag = ({
   placedShapes,
   setPlacedShapes,
   cellSize,
-  setCellSize,
-  blockColor,
+  setCellSize
 }) => {
   // --- Single shape drag state ---
   const [isDragging, setIsDragging] = useState(false);
@@ -41,17 +40,6 @@ const ClickDrag = ({
       if (rect.width > 0) {
         const newCellSize = (rect.width - borderWidth * 2) / 16;
         const oldCellSize = prevCellSizeRef.current;
-
-        if (oldCellSize > 0 && Math.abs(newCellSize - oldCellSize) > 0.5) {
-          const scale = newCellSize / oldCellSize;
-          setPlacedShapes((prev) =>
-            prev.map((s) => ({
-              ...s,
-              x: Math.round((s.x * scale) / newCellSize) * newCellSize,
-              y: Math.round((s.y * scale) / newCellSize) * newCellSize,
-            }))
-          );
-        }
 
         prevCellSizeRef.current = newCellSize;
         setCellSize(newCellSize);
@@ -89,10 +77,10 @@ const ClickDrag = ({
     if (index !== undefined && selectedIndices.has(index)) {
       setIsGroupDragging(true);
       setGroupDragStart({ x: e.clientX, y: e.clientY });
-      // Snapshot the original positions of every selected shape
+      // Snapshot the original cell positions of every selected shape
       setGroupDragOriginals(
         placedShapes.map((s, i) =>
-          selectedIndices.has(i) ? { x: s.x, y: s.y } : null
+          selectedIndices.has(i) ? { cellX: s.cellX, cellY: s.cellY } : null
         )
       );
       return;
@@ -106,8 +94,8 @@ const ClickDrag = ({
     if (index !== undefined) {
       setDraggingIndex(index);
       setOffset({
-        x: e.clientX - placedShapes[index].x,
-        y: e.clientY - placedShapes[index].y,
+        x: e.clientX - placedShapes[index].cellX * cellSize,
+        y: e.clientY - placedShapes[index].cellY * cellSize,
       });
     } else {
       setDraggingIndex(null);
@@ -158,19 +146,19 @@ const ClickDrag = ({
       const dx = e.clientX - groupDragStart.x;
       const dy = e.clientY - groupDragStart.y;
       // Snap delta to grid
-      const snappedDx = Math.round(dx / cellSize) * cellSize;
-      const snappedDy = Math.round(dy / cellSize) * cellSize;
+      const snappedDCells_x = Math.round(dx / cellSize);
+      const snappedDCells_y = Math.round(dy / cellSize);
 
       const rect = canvasRef.current.getBoundingClientRect();
       setPlacedShapes((prev) =>
         prev.map((s, i) => {
           if (!selectedIndices.has(i) || !groupDragOriginals[i]) return s;
-          let newX = groupDragOriginals[i].x + snappedDx;
-          let newY = groupDragOriginals[i].y + snappedDy;
-          // Constrain within canvas
-          newX = Math.max(0, Math.min(newX, rect.width - cellSize));
-          newY = Math.max(0, Math.min(newY, rect.height - cellSize));
-          return { ...s, x: newX, y: newY };
+          const shapeInfo = shapes[s.type];
+          const maxCellX = Math.floor((rect.width - shapeInfo.width) / cellSize);
+          const maxCellY = Math.floor((rect.height - shapeInfo.height) / cellSize);
+          const newCellX = Math.max(0, Math.min(groupDragOriginals[i].cellX + snappedDCells_x, maxCellX));
+          const newCellY = Math.max(0, Math.min(groupDragOriginals[i].cellY + snappedDCells_y, maxCellY));
+          return { ...s, cellX: newCellX, cellY: newCellY };
         })
       );
       return;
@@ -179,26 +167,23 @@ const ClickDrag = ({
     // Single shape drag (existing logic)
     if (isDragging && canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
-      const borderWidth = 2;
-      setCellSize((rect.width - borderWidth * 2) / 16);
 
+      const shapeInfo = shapes[shapeType];
       let newX = e.clientX - offset.x;
       let newY = e.clientY - offset.y;
-      newX = Math.round(newX / cellSize) * cellSize;
-      newY = Math.round(newY / cellSize) * cellSize;
-      newX = Math.max(0, Math.min(newX, rect.width - cellSize));
-      newY = Math.max(0, Math.min(newY, rect.height - cellSize));
+      const newCellX = Math.max(0, Math.min(Math.round(newX / cellSize), Math.floor((rect.width - shapeInfo.width) / cellSize)));
+      const newCellY = Math.max(0, Math.min(Math.round(newY / cellSize), Math.floor((rect.height - shapeInfo.height) / cellSize)));
 
       if (draggingIndex === null) {
         setPlacedShapes((prev) => [
           ...prev,
-          { x: newX, y: newY, type: shapeType, rotation: 0 },
+          { cellX: newCellX, cellY: newCellY, type: shapeType, rotation: 0 },
         ]);
         setDraggingIndex(placedShapes.length);
       } else {
         setPlacedShapes((prev) =>
           prev.map((pos, index) =>
-            index === draggingIndex ? { ...pos, x: newX, y: newY } : pos
+            index === draggingIndex ? { ...pos, cellX: newCellX, cellY: newCellY } : pos
           )
         );
       }
@@ -218,11 +203,13 @@ const ClickDrag = ({
         const hits = new Set();
         placedShapes.forEach((pos, i) => {
           const info = shapes[pos.type];
+          const px = pos.cellX * cellSize;
+          const py = pos.cellY * cellSize;
           const shapeRect = {
-            left: pos.x,
-            top: pos.y,
-            right: pos.x + info.width,
-            bottom: pos.y + info.height,
+            left: px,
+            top: py,
+            right: px + info.width,
+            bottom: py + info.height,
           };
           if (rectsOverlap(sel, shapeRect)) hits.add(i);
         });
@@ -277,21 +264,22 @@ const ClickDrag = ({
   const duplicateSelected = () => {
     if (selectedIndices.size === 0) return;
 
-    // Find the bounding box of the selection
-    let minX = Infinity, maxRight = -Infinity;
+    // Find the bounding box of the selection (in cells)
+    let minCellX = Infinity, maxCellRight = -Infinity;
     placedShapes.forEach((s, i) => {
       if (!selectedIndices.has(i)) return;
       const info = shapes[s.type];
-      if (s.x < minX) minX = s.x;
-      if (s.x + info.width > maxRight) maxRight = s.x + info.width;
+      const widthInCells = Math.round(info.width / cellSize);
+      if (s.cellX < minCellX) minCellX = s.cellX;
+      if (s.cellX + widthInCells > maxCellRight) maxCellRight = s.cellX + widthInCells;
     });
     // Offset = place copies so their left edge starts one cell after the selection's right edge
-    const offsetX = maxRight - minX + cellSize;
+    const offsetCellX = maxCellRight - minCellX + 1;
 
     const copies = [];
     placedShapes.forEach((s, i) => {
       if (selectedIndices.has(i)) {
-        copies.push({ ...s, x: s.x + offsetX });
+        copies.push({ ...s, cellX: s.cellX + offsetCellX });
       }
     });
     setPlacedShapes((prev) => {
@@ -427,8 +415,8 @@ const ClickDrag = ({
             }}
             onMouseDown={(e) => handleMouseDown(e, index, pos.type)}
             style={{
-              left: `${pos.x}px`,
-              top: `${pos.y}px`,
+              left: `${pos.cellX * cellSize}px`,
+              top: `${pos.cellY * cellSize}px`,
               width: `${shapes[pos.type].width}px`,
               height: `${shapes[pos.type].height}px`,
               borderRadius:
@@ -486,8 +474,8 @@ const ClickDrag = ({
               onClick={removeShape}
               style={{
                 position: "absolute",
-                left: `${placedShapes[showSettings].x + shapes[placedShapes[showSettings].type].width}px`,
-                top: `${placedShapes[showSettings].y}px`,
+                left: `${placedShapes[showSettings].cellX * cellSize + shapes[placedShapes[showSettings].type].width}px`,
+                top: `${placedShapes[showSettings].cellY * cellSize}px`,
                 zIndex: 1000,
               }}
             >
@@ -500,8 +488,8 @@ const ClickDrag = ({
                 onClick={rotateShape}
                 style={{
                   position: "absolute",
-                  left: `${placedShapes[showSettings].x + shapes[placedShapes[showSettings].type].width}px`,
-                  top: `${placedShapes[showSettings].y + 34}px`,
+                  left: `${placedShapes[showSettings].cellX * cellSize + shapes[placedShapes[showSettings].type].width}px`,
+                  top: `${placedShapes[showSettings].cellY * cellSize + 34}px`,
                   zIndex: 1000,
                 }}
               >
