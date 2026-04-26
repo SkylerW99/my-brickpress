@@ -6,7 +6,7 @@ function Print({ placedShapes, cellSize, printSettings, onSettingsChange }) {
   const [bleed, setBleed] = useState(printSettings?.bleed ?? 1.5);
   const [bleedOpacity, setBleedOpacity] = useState(printSettings?.bleedOpacity ?? 0.15);
   const [distress, setDistress] = useState(printSettings?.distress ?? 0.3);
-  const [bgColor, setBgColor] = useState(printSettings?.bgColor ?? "#ffd7d7");
+  const [bgColor, setBgColor] = useState(printSettings?.bgColor ?? "#ffffff");
   const [blockColors, setBlockColors] = useState(printSettings?.blockColors ?? "#667eea");
 
   // Notify parent whenever any setting changes
