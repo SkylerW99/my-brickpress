@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Shapes from "./shapes";
 
-function Print({ placedShapes, cellSize, printSettings, onSettingsChange }) {
+function Print({ placedShapes, cellSize, gridNumber, printSettings, onSettingsChange}) {
   const [grain, setGrain] = useState(printSettings?.grain ?? 50);
   const [bleed, setBleed] = useState(printSettings?.bleed ?? 1.5);
   const [bleedOpacity, setBleedOpacity] = useState(printSettings?.bleedOpacity ?? 0.15);
@@ -27,14 +27,14 @@ function Print({ placedShapes, cellSize, printSettings, onSettingsChange }) {
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext("2d");
-    const CELL = size / 16;
+    const CELL = size / gridNumber;
     const shapes = Shapes(cellSize);
 
     // 1. Draw background
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, size, size);
 
-    //define the shapes parameters
+    //define the shapes parameters, not drawing the shapes yet
     function drawShapes(shape) {
         const shapeInfo = shapes[shape.type];
         ctx.fillStyle = blockColors;

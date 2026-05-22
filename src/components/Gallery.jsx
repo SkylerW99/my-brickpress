@@ -281,6 +281,7 @@ function Gallery({ onLoad, userId }) {
                 <DrawingThumbnail
                   placedShapes={drawing.placedShapes ?? []}
                   cellSize={drawing.cellSize ?? 20}
+                  gridNumber={drawing.gridNumber ?? 16}
                   printSettings={drawing.printSettings ?? undefined}
                 />
                 <EditableName

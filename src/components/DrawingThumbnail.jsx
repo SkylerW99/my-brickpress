@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from
 import Shapes from './shapes';
 
 // Renders a small thumbnail preview of a drawing using canvas (with print effects)
-function DrawingThumbnail({ placedShapes, cellSize, thumbSize, printSettings }) {
+function DrawingThumbnail({ placedShapes, cellSize, gridNumber, thumbSize, printSettings }) {
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const [resolvedSize, setResolvedSize] = useState(0);
@@ -38,7 +38,7 @@ function DrawingThumbnail({ placedShapes, cellSize, thumbSize, printSettings }) 
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
-    const CELL = size / 16;
+    const CELL = size / gridNumber;
     const shapes = Shapes(cellSize);
 
     // 1. Background

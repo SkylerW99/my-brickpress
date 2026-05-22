@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import "../styles/index.css"
 import ClickDrag from './clickDrag'
+import GridNumber from './GridNumber'
 import Print from './print'
 import Gallery from './Gallery'
 import Login from './Login'
@@ -15,6 +16,10 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [placedShapes, setPlacedShapes] = useState([]);
   const [cellSize, setCellSize] = useState(20);
+    const [numRow, setNumRow] = useState(16);
+    const [aspectRatio, setAspectRatio] = useState({
+      value: "1 / 1", label: "1 × 1"
+    });
   const [currentDrawingId, setCurrentDrawingId] = useState(null);
   const [currentDrawingName, setCurrentDrawingName] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -31,6 +36,7 @@ function App() {
     return unsubscribe;
   }, []);
 
+  // Auto-save the current drawing to Firestore when the user signs out or closes the tab
   const autoSaveDrawing = useCallback(async () => {
     if (!user || placedShapes.length === 0 || savingRef.current) return;
 
@@ -40,6 +46,7 @@ function App() {
         await setDoc(doc(db, 'drawings', currentDrawingId), {
           placedShapes,
           cellSize,
+          gridNumber,
           printSettings: printSettings || {},
           updatedAt: serverTimestamp(),
           userId: user.uid,
@@ -50,6 +57,7 @@ function App() {
         const docRef = await addDoc(collection(db, 'drawings'), {
           placedShapes,
           cellSize,
+          gridNumber,
           printSettings: printSettings || {},
           createdAt: serverTimestamp(),
           userId: user.uid,
@@ -169,18 +177,30 @@ function App() {
 
           <div className="editor-layout">
             <div className="editor-left">
+            <div className="top-bottom">
+            <GridNumber 
+            numRow={numRow}
+            setNumRow={setNumRow}
+            aspectRatio={aspectRatio}
+            setAspectRatio={setAspectRatio}
+            /> 
               <ClickDrag
                 placedShapes={placedShapes}
                 setPlacedShapes={setPlacedShapes}
                 cellSize={cellSize}
                 setCellSize={setCellSize}
+                numRow={numRow}
+                aspectRatio={aspectRatio}
                 blockColor={printSettings?.blockColors ?? '#c98a4f'}
               />
+              </div>
             </div>
             <div className="editor-right">
               <Print
                 placedShapes={placedShapes}
                 cellSize={cellSize}
+                numRow={numRow}
+                aspectRatio={aspectRatio}
                 printSettings={printSettings}
                 onSettingsChange={setPrintSettings}
               />
@@ -200,6 +220,8 @@ function App() {
                   <Print
                     placedShapes={placedShapes}
                     cellSize={cellSize}
+                    numRow={numRow}
+                    aspectRatio={aspectRatio}
                     printSettings={printSettings}
                     onSettingsChange={setPrintSettings}
                   />

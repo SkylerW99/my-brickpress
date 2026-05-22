@@ -5,7 +5,9 @@ const ClickDrag = ({
   placedShapes,
   setPlacedShapes,
   cellSize,
-  setCellSize
+  setCellSize,
+  numRow,
+  aspectRatio
 }) => {
   // --- Single shape drag state ---
   const [isDragging, setIsDragging] = useState(false);
@@ -28,7 +30,8 @@ const ClickDrag = ({
   const canvasRef = useRef(null);
   const prevCellSizeRef = useRef(cellSize);
 
-  // Recalculate cellSize whenever the canvas element resizes (window resize, layout shift, etc.)
+  // 1. Recalculate cellSize whenever the canvas element resizes (window resize, layout shift, etc.)
+  // 2. Recalculate the cellSize whenever the gridNumber changes (user input)
   // and rescale all placed shapes so they stay snapped to the new grid
   useEffect(() => {
     const el = canvasRef.current;
@@ -38,11 +41,13 @@ const ClickDrag = ({
     const recalc = () => {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0) {
-        const newCellSize = (rect.width - borderWidth * 2) / 16;
-        const oldCellSize = prevCellSizeRef.current;
+      const newCellSize = (rect.height - borderWidth * 2) / numRow;
+      const oldCellSize = prevCellSizeRef.current;
 
-        prevCellSizeRef.current = newCellSize;
-        setCellSize(newCellSize);
+      prevCellSizeRef.current = newCellSize;
+      setCellSize(newCellSize);
+      el.style.setProperty('--cell-size', `${newCellSize}px`); // Update CSS variable for consistent cell sizing in styles
+      el.style.setProperty('--aspect-ratio', `${aspectRatio.value}`); // Update CSS variable for aspect ratio
       }
     };
 
@@ -52,7 +57,9 @@ const ClickDrag = ({
     const ro = new ResizeObserver(recalc);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [setCellSize, setPlacedShapes]);
+  }, [setCellSize, setPlacedShapes,numRow, aspectRatio]);
+
+  console.log('cellSize', cellSize, 'gridNumber', numRow, 'aspectRatio', aspectRatio.value);
 
   // --- Helper: check if two axis-aligned rects overlap ---
   const rectsOverlap = (a, b) =>

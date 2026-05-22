@@ -63,6 +63,11 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* grid size */
+  --grid-size: 16;
+  --cell-size: calc(100% / var(--grid-size));
+  --aspect-ratio: 1 / 1;
 }
 
 /* --- Kraft-paper texture on body --- */
@@ -268,8 +273,7 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  width: min(60vh, calc(100vw - 380px));
-  max-width: 90vw;
+  width: min(70vh, calc(100vw - 380px)); 
   margin: 0 auto;
 }
 
@@ -351,9 +355,7 @@ button:focus-visible {
 /* Drawing canvas */
 .canvas {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  max-height: 80vh;
+  aspect-ratio: var(--aspect-ratio);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
   background-color: var(--bg-panel);
@@ -381,7 +383,7 @@ button:focus-visible {
   z-index: 9998;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='0' cy='0' r='3' fill='rgba(228%2C220%2C200%2C0.15)'/%3E%3C/svg%3E");
-  background-size: calc(100% / 16) calc(100% / 16);
+  background-size: var(--cell-size);
   border-radius: inherit;
 }
 
@@ -1188,4 +1190,13 @@ width:fit-content;
 ::selection {
   background: oklch(0.55 0.155 38 / 0.2);
   color: var(--text-dark);
+}
+
+.top-bottom{
+  height:100%;
+  display: flex;
+  flex-direction: column;
+  align-items:start;
+  justify-content: flex-start;  /* stack from top */
+  gap: 20px;
 }
