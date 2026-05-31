@@ -7,7 +7,8 @@ const ClickDrag = ({
   cellSize,
   setCellSize,
   numRow,
-  aspectRatio
+  aspectRatio,
+  setAspectRatio
 }) => {
   // --- Single shape drag state ---
   const [isDragging, setIsDragging] = useState(false);
@@ -41,15 +42,27 @@ const ClickDrag = ({
     const recalc = () => {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0) {
-      const newCellSize = (rect.height - borderWidth * 2) / numRow;
       const oldCellSize = prevCellSizeRef.current;
-
+      const numCol = aspectRatio.value === "1 / 1" ? numRow : aspectRatio.value === "4 / 6" ? Math.floor(numRow / 6 * 4) : Math.floor(numRow / 4 * 6);
+      let newCellSize = (rect.width - borderWidth * 2) / numCol;
+      // change the canvas width/height properties based on the aspect ratio
+      if (aspectRatio.value === "6 / 4" || aspectRatio.value === "1 / 1") {
+      //when width > height, calcualte cell size based on width
+      el.style.setProperty('--canvas-width', `100%`); 
+      el.style.setProperty('--canvas-height', `${newCellSize * numRow}px`); 
+      } else if (aspectRatio.value === "4 / 6") {
+      //when height > width, calcualte cell size based on height
+      newCellSize = (rect.height - borderWidth * 2) / numRow;
+        el.style.setProperty('--canvas-width', `${newCellSize * numCol}px`);
+        el.style.setProperty('--canvas-height', `100%`);
+      }
       prevCellSizeRef.current = newCellSize;
       setCellSize(newCellSize);
       el.style.setProperty('--cell-size', `${newCellSize}px`); // Update CSS variable for consistent cell sizing in styles
-      el.style.setProperty('--aspect-ratio', `${aspectRatio.value}`); // Update CSS variable for aspect ratio
-      }
-    };
+
+    }
+  
+  };
 
     // Initial calculation
     recalc();
@@ -57,9 +70,9 @@ const ClickDrag = ({
     const ro = new ResizeObserver(recalc);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [setCellSize, setPlacedShapes,numRow, aspectRatio]);
+  }, [setCellSize, setPlacedShapes,numRow, aspectRatio, setAspectRatio]);
 
-  console.log('cellSize', cellSize, 'gridNumber', numRow, 'aspectRatio', aspectRatio.value);
+  //console.log('cellSize', cellSize, 'gridNumber', numRow, 'aspectRatio', aspectRatio.value);
 
   // --- Helper: check if two axis-aligned rects overlap ---
   const rectsOverlap = (a, b) =>
@@ -309,7 +322,7 @@ const ClickDrag = ({
     );
   };
 
-    // Helper component for rendering the SVG content of special shapes like Arc and heart
+  // Helper component for rendering the SVG content of special shapes like Arc and heart
   // These must match the canvas-drawn shapes in print.jsx exactly.
   const renderShapeContent = (shapeInfo, size) => {
     if (shapeInfo.type === "Arc") {
@@ -356,6 +369,13 @@ const ClickDrag = ({
         </svg>
       );
     }
+    if (shapeInfo.type === "triangle") {
+      return (
+        <svg width={size.width} height={size.height} viewBox={`0 0 ${size.width} ${size.height}`} style={{ position: 'absolute', top: 0, left: 0 }}>
+          <polygon points={`${size.width} 0, 0 0, 0 ${size.height}`} fill="var(--block-color)" />
+        </svg>
+      )
+    }
     return null;
   };
 
@@ -388,10 +408,10 @@ const ClickDrag = ({
                   width: `${shape.width}px`,
                   height: `${shape.height}px`,
                   borderRadius: shape.type === "Arc" ? 0 : shape.borderRadius,
-                  backgroundColor: shape.type === "Arc" || shape.type === "heart" || shape.type === "stripedRect" || shape.type === "stripedRect_2" ? "transparent" : undefined,
+                  backgroundColor: shape.type === "Arc" || shape.type === "heart" || shape.type === "stripedRect" || shape.type === "stripedRect_2" || shape.type === "triangle" ? "transparent" : undefined,
                 }}
               >
-                {(shape.type === "Arc" || shape.type === "heart" || shape.type === "stripedRect" || shape.type === "stripedRect_2") &&
+                {(shape.type === "Arc" || shape.type === "heart" || shape.type === "stripedRect" || shape.type === "stripedRect_2" || shape.type === "triangle") &&
                   renderShapeContent(shape, {
                     width: shape.width,
                     height: shape.height,
@@ -431,12 +451,12 @@ const ClickDrag = ({
                   ? 0
                   : shapes[pos.type].borderRadius,
               backgroundColor:
-                shapes[pos.type].type === "Arc" || shapes[pos.type].type === "heart" || shapes[pos.type].type === "stripedRect" || shapes[pos.type].type === "stripedRect_2" ? "transparent" : undefined,
+              shapes[pos.type].type === "Arc" || shapes[pos.type].type === "heart" || shapes[pos.type].type === "stripedRect" || shapes[pos.type].type === "stripedRect_2" || shapes[pos.type].type === "triangle" ? "transparent" : undefined,
               transform: `rotate(${pos.rotation || 0}deg)`,
               transformOrigin: "center center",
             }}
           >
-            {(shapes[pos.type].type === "Arc" || shapes[pos.type].type === "heart" || shapes[pos.type].type === "stripedRect" || shapes[pos.type].type === "stripedRect_2") &&
+            {(shapes[pos.type].type === "Arc" || shapes[pos.type].type === "heart" || shapes[pos.type].type === "stripedRect" || shapes[pos.type].type === "stripedRect_2" || shapes[pos.type].type === "triangle") &&
               renderShapeContent(shapes[pos.type], {
                 width: shapes[pos.type].width,
                 height: shapes[pos.type].height,
@@ -489,7 +509,7 @@ const ClickDrag = ({
               ✕ Delete
             </button>
 
-            {(shapes[placedShapes[showSettings].type].type === "Arc" || shapes[placedShapes[showSettings].type].type === "heart" || shapes[placedShapes[showSettings].type].type === "QuarterCircle") && (
+            {(shapes[placedShapes[showSettings].type].type === "Arc" || shapes[placedShapes[showSettings].type].type === "heart" || "QuarterCircle" || "triangle") && (
               <button
                 className="shape-action-btn"
                 onClick={rotateShape}

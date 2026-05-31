@@ -16,8 +16,8 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [placedShapes, setPlacedShapes] = useState([]);
   const [cellSize, setCellSize] = useState(20);
-    const [numRow, setNumRow] = useState(16);
-    const [aspectRatio, setAspectRatio] = useState({
+  const [numRow, setNumRow] = useState(16);
+  const [aspectRatio, setAspectRatio] = useState({
       value: "1 / 1", label: "1 × 1"
     });
   const [currentDrawingId, setCurrentDrawingId] = useState(null);
@@ -46,7 +46,8 @@ function App() {
         await setDoc(doc(db, 'drawings', currentDrawingId), {
           placedShapes,
           cellSize,
-          gridNumber,
+          numRow,
+          aspectRatio,
           printSettings: printSettings || {},
           updatedAt: serverTimestamp(),
           userId: user.uid,
@@ -57,7 +58,8 @@ function App() {
         const docRef = await addDoc(collection(db, 'drawings'), {
           placedShapes,
           cellSize,
-          gridNumber,
+          numRow,
+          aspectRatio,
           printSettings: printSettings || {},
           createdAt: serverTimestamp(),
           userId: user.uid,
@@ -191,6 +193,7 @@ function App() {
                 setCellSize={setCellSize}
                 numRow={numRow}
                 aspectRatio={aspectRatio}
+                setAspectRatio={setAspectRatio}
                 blockColor={printSettings?.blockColors ?? '#c98a4f'}
               />
               </div>

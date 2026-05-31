@@ -68,6 +68,8 @@
   --grid-size: 16;
   --cell-size: calc(100% / var(--grid-size));
   --aspect-ratio: 1 / 1;
+  --canvas-width: 100%;
+  --canvas-height: 100%;
 }
 
 /* --- Kraft-paper texture on body --- */
@@ -273,7 +275,9 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  width: min(70vh, calc(100vw - 380px)); 
+  width: min(70vh, calc(100vw - 380px));
+  flex: 1;        
+  min-height: 0; 
   margin: 0 auto;
 }
 
@@ -355,7 +359,9 @@ button:focus-visible {
 /* Drawing canvas */
 .canvas {
   position: relative;
-  aspect-ratio: var(--aspect-ratio);
+  width: var(--canvas-width);
+  height:var(--canvas-height);
+  /* aspect-ratio: var(--aspect-ratio); */
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
   background-color: var(--bg-panel);
@@ -364,12 +370,6 @@ button:focus-visible {
     var(--shadow-md),
     inset 0 0 60px rgba(0, 0, 0, 0.06),
     inset 0 0 12px rgba(0, 0, 0, 0.04);
-  /* Subtle grid — kept faint so stud dots read as the primary surface texture 
-  background-size: calc(100% / 16) calc(100% / 16);
-  background-image:
-    linear-gradient(to right, rgba(160, 148, 120, 0.4) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(160, 148, 120, 0.4) 1px, transparent 1px);
-     */
 }
 
 /* Lego stud grid overlay — 2.6 px radius dots on 20 px grid, z-index 9998.
@@ -474,10 +474,11 @@ button:focus-visible {
 .editor-left {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: stretch;   /* let children fill full height, not just auto */
   justify-content: center;
   padding: var(--space-lg);
   min-width: 0;
+  min-height: 0;          /* allow shrink inside parent flex */
 }
 
 .editor-right {

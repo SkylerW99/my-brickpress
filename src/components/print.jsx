@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Shapes from "./shapes";
 
-function Print({ placedShapes, cellSize, gridNumber, printSettings, onSettingsChange}) {
+function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onSettingsChange}) {
   const [grain, setGrain] = useState(printSettings?.grain ?? 50);
   const [bleed, setBleed] = useState(printSettings?.bleed ?? 1.5);
   const [bleedOpacity, setBleedOpacity] = useState(printSettings?.bleedOpacity ?? 0.15);
@@ -25,9 +25,11 @@ function Print({ placedShapes, cellSize, gridNumber, printSettings, onSettingsCh
 
     const size = 512;
     canvas.width = size;
-    canvas.height = size;
+    // aspectRatio.value is a string like "6 / 4" — parse it into a number
+    const [arW, arH] = aspectRatio.value.split('/').map(Number);
+    canvas.height = Math.round(size * arH / arW);
     const ctx = canvas.getContext("2d");
-    const CELL = size / gridNumber;
+    const CELL = canvas.height / numRow;
     const shapes = Shapes(cellSize);
 
     // 1. Draw background
@@ -99,7 +101,14 @@ function Print({ placedShapes, cellSize, gridNumber, printSettings, onSettingsCh
         for (let i = 0; i < 3; i++) {
           ctx.fillRect(x, y + stripeH * (i * 2), w, stripeH);
         }
-      } else if (shapeType === "heart") {
+      } else if (shapeType === "triangle") {
+        ctx.moveTo(x + w, y); // top-right
+        ctx.lineTo(x, y);     // top-left
+        ctx.lineTo(x, y + h); // bottom-left
+        ctx.closePath();
+        ctx.fill();
+      } 
+      else if (shapeType === "heart") {
         // Heart SVG path defined in a 24x24 viewBox — scale to target w × h
         const heartPath = new Path2D(
           "M12.8993 3.73386L11.9975 4.63704L11.0912 3.73167" +
@@ -272,6 +281,7 @@ function Print({ placedShapes, cellSize, gridNumber, printSettings, onSettingsCh
     <div className="print-panel animate-in animate-in-delay-1">
       <h3 className="print-panel-title">Live Preview</h3>
 
+      
       <canvas
         ref={canvasRef}
         className="print-canvas"

@@ -1,7 +1,8 @@
 // A component for selecting the number of rows and columns in the grid, as well as the aspect ratio (1:1, 4:6, 6:4)
+import { set } from "immutable";
 import React, { useState } from "react";
 
-function GridNumber({numRow, setNumRow, aspectRatio, setAspectRatio}) {
+function GridNumber({numRow, setNumRow,aspectRatio, setAspectRatio}) {
 
   const options = [
     { value: "1 / 1", label: "1 × 1" },
@@ -9,20 +10,22 @@ function GridNumber({numRow, setNumRow, aspectRatio, setAspectRatio}) {
     { value: "6 / 4", label: "6 × 4" },
   ];
 
-  const numCol = (numRow, aspectRatio) => {
+  //num col is calculated based on the selected aspect ratio and number of rows
+  function calculateNumCol(numRow, aspectRatio) {
     if (aspectRatio === "1 / 1") {
       return numRow;
     } else if (aspectRatio === "4 / 6") {
-      return numRow / 6 * 4;
+      return Math.floor(numRow / 6 * 4);
     } else if (aspectRatio === "6 / 4") {
-      return numRow / 4 * 6;
-    }
-  }
+      return Math.floor(numRow / 4 * 6);
+    }}
+
+    console.log("numCol:", calculateNumCol(numRow, aspectRatio.value));
 
   return (
     <div>
       <span>Column</span>
-      <input type="text" value={ Math.round(numCol(numRow, aspectRatio.value))} readOnly />
+      <input type="text" value={calculateNumCol(numRow, aspectRatio.value)} readOnly />
         <label>
         <span>Row</span>
         <input
