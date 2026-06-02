@@ -640,7 +640,7 @@ button:focus-visible {
 
 .print-canvas {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: var(--radius-md);
   border: 2px solid var(--border-light);
   box-shadow: var(--shadow-md);

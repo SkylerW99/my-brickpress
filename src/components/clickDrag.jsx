@@ -509,7 +509,7 @@ const ClickDrag = ({
               ✕ Delete
             </button>
 
-            {(shapes[placedShapes[showSettings].type].type === "Arc" || shapes[placedShapes[showSettings].type].type === "heart" || "QuarterCircle" || "triangle") && (
+            {(shapes[placedShapes[showSettings].type].type === "Arc" || shapes[placedShapes[showSettings].type].type === "heart" || shapes[placedShapes[showSettings].type].type ==="QuarterCircle" || shapes[placedShapes[showSettings].type].type === "triangle") && (
               <button
                 className="shape-action-btn"
                 onClick={rotateShape}

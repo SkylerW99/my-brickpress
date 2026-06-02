@@ -23,18 +23,28 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const size = 512;
-    canvas.width = size;
-    // aspectRatio.value is a string like "6 / 4" — parse it into a number
-    const [arW, arH] = aspectRatio.value.split('/').map(Number);
-    canvas.height = Math.round(size * arH / arW);
+    const size = 1080;
+    // aspectRatio.value is a string like "6 / 4" — parse it into "6" and "4"
+    //const [arW, arH] = aspectRatio.value.split('/').map(Number); 
+    const numCol = aspectRatio.value === "1 / 1" ? numRow : aspectRatio.value === "4 / 6" ? Math.floor(numRow / 6 * 4) : Math.floor(numRow / 4 * 6);
+    let CELL;
+    if (aspectRatio.value === "6 / 4" || aspectRatio.value === "1 / 1") {
+      canvas.width = size;
+      CELL = size / numCol;
+      canvas.height = CELL * numRow; 
+    } else {
+      canvas.height = size;
+      CELL = size / numRow;
+      canvas.width = CELL * numCol; 
+    }
     const ctx = canvas.getContext("2d");
-    const CELL = canvas.height / numRow;
+
+
     const shapes = Shapes(cellSize);
 
     // 1. Draw background
     ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     //define the shapes parameters, not drawing the shapes yet
     function drawShapes(shape) {
@@ -167,13 +177,14 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
     });
     ctx.globalCompositeOperation = "source-over";
 
-    // 4. Distressed grunge texture — simulates uneven ink coverage
+    // 4. Distressed grunge texture — simulates uneven ink coverage 
+    // adjust the visual effect later
     if (distress > 0) {
       const bgR = parseInt(bgColor.slice(1, 3), 16);
       const bgG = parseInt(bgColor.slice(3, 5), 16);
       const bgB = parseInt(bgColor.slice(5, 7), 16);
 
-      const imageData = ctx.getImageData(0, 0, size, size);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const d = imageData.data;
 
       // Generate a low-frequency Perlin-like noise field using layered grids
@@ -184,8 +195,8 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
 
       // Pre-compute random grids
       const makeGrid = (s) => {
-        const cols = Math.ceil(size / s) + 2;
-        const rows = Math.ceil(size / s) + 2;
+        const cols = Math.ceil(canvas.width / s) + 2;
+        const rows = Math.ceil(canvas.height / s) + 2;
         const g = [];
         for (let i = 0; i < rows * cols; i++) g.push(Math.random());
         return { data: g, cols };
@@ -213,9 +224,9 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
       const g2 = makeGrid(grid2);
       const g3 = makeGrid(grid3);
 
-      for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-          const i = (y * size + x) * 4;
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const i = (y * canvas.width + x) * 4;
           // Skip background pixels
           if (d[i] === bgR && d[i + 1] === bgG && d[i + 2] === bgB) continue;
 
@@ -244,7 +255,7 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
       const bgG = parseInt(bgColor.slice(3, 5), 16);
       const bgB = parseInt(bgColor.slice(5, 7), 16);
 
-      const imageData = ctx.getImageData(0, 0, size, size);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const d = imageData.data;
       for (let i = 0; i < d.length; i += 4) {
         // Skip if this pixel matches the background color
@@ -257,7 +268,7 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
       }
       ctx.putImageData(imageData, 0, 0);
     }
-  }, [placedShapes, cellSize, grain, bleed, bleedOpacity, distress, bgColor, blockColors]);
+  }, [placedShapes, aspectRatio,cellSize, grain, bleed, bleedOpacity, distress, bgColor, blockColors]);
 
   // Debounced re-render: fires ~120ms after the last change to stay smooth during drags
   useEffect(() => {
