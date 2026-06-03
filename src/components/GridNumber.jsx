@@ -38,7 +38,7 @@ function GridNumber({numRow, setNumRow,aspectRatio, setAspectRatio}) {
       </label>
 
       <span>Ratio</span>
-      <select value={aspectRatio.value} onChange={(e) => setAspectRatio({ value: e.target.value, label: e.target.label })}>
+      <select value={aspectRatio.value} onChange={(e) => setAspectRatio({ value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

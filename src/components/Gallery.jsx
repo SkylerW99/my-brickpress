@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, deleteDoc, doc, orderBy, query, where, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import DrawingThumbnail from './DrawingThumbnail';
+import DrawingThumbnail from './printedView/DrawingThumbnail';
 
 // Inline-editable name field for a gallery card
 function EditableName({ id, name, onRename }) {
@@ -246,7 +246,7 @@ function Gallery({ onLoad, userId }) {
 
   // Load a drawing into the editor
   const handleLoad = (drawing) => {
-    onLoad(drawing.id, drawing.name, drawing.placedShapes, drawing.cellSize, drawing.printSettings ?? null);
+    onLoad(drawing.id, drawing.name, drawing.placedShapes, drawing.cellSize, drawing.printSettings ?? null, drawing.aspectRatio ?? null, drawing.numRow ?? null);
     navigate('/');
   };
 
@@ -281,8 +281,9 @@ function Gallery({ onLoad, userId }) {
                 <DrawingThumbnail
                   placedShapes={drawing.placedShapes ?? []}
                   cellSize={drawing.cellSize ?? 20}
-                  gridNumber={drawing.gridNumber ?? 16}
+                  gridNumber={drawing.numRow ?? drawing.gridNumber ?? 16}
                   printSettings={drawing.printSettings ?? undefined}
+                  aspectRatio={drawing.aspectRatio ?? { value: '1 / 1', label: '1 × 1' }}
                 />
                 <EditableName
                   id={drawing.id}

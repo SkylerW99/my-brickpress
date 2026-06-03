@@ -3,9 +3,10 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import "../styles/index.css"
 import ClickDrag from './clickDrag'
 import GridNumber from './GridNumber'
-import Print from './print'
+import Print from './printedView/print'
 import Gallery from './Gallery'
 import Login from './Login'
+import SaveButton from './SaveButton'
 import { onAuthChange, logOut } from '../auth'
 import { db } from '../firebase'
 import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore'
@@ -36,6 +37,9 @@ function App() {
     return unsubscribe;
   }, []);
 
+  const sanitize = (obj) =>
+    JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)));
+
   // Auto-save the current drawing to Firestore when the user signs out or closes the tab
   const autoSaveDrawing = useCallback(async () => {
     if (!user || placedShapes.length === 0 || savingRef.current) return;
@@ -44,11 +48,7 @@ function App() {
     try {
       if (currentDrawingId) {
         await setDoc(doc(db, 'drawings', currentDrawingId), {
-          placedShapes,
-          cellSize,
-          numRow,
-          aspectRatio,
-          printSettings: printSettings || {},
+          ...sanitize({ placedShapes, cellSize, numRow, aspectRatio, printSettings: printSettings || {} }),
           updatedAt: serverTimestamp(),
           userId: user.uid,
           name: currentDrawingName || `Drawing ${new Date().toLocaleDateString()}`,
@@ -56,11 +56,7 @@ function App() {
       } else {
         const name = currentDrawingName || `Drawing ${new Date().toLocaleDateString()}`;
         const docRef = await addDoc(collection(db, 'drawings'), {
-          placedShapes,
-          cellSize,
-          numRow,
-          aspectRatio,
-          printSettings: printSettings || {},
+          ...sanitize({ placedShapes, cellSize, numRow, aspectRatio, printSettings: printSettings || {} }),
           createdAt: serverTimestamp(),
           userId: user.uid,
           name,
@@ -73,7 +69,7 @@ function App() {
     } finally {
       savingRef.current = false;
     }
-  }, [user, placedShapes, cellSize, printSettings, currentDrawingId, currentDrawingName]);
+  }, [user, placedShapes, cellSize, numRow, aspectRatio, printSettings, currentDrawingId, currentDrawingName]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -102,7 +98,7 @@ function App() {
   };
 
   // Load a saved drawing into the editor
-  const handleLoadDrawing = (id, name, shapes, savedCellSize, savedPrintSettings) => {
+  const handleLoadDrawing = (id, name, shapes, savedCellSize, savedPrintSettings, savedAspectRatio, savedNumRow) => {
     setCurrentDrawingId(id);
     setCurrentDrawingName(name);
     // Migrate old format (x/y in pixels) to new format (cellX/cellY in grid units)
@@ -114,6 +110,8 @@ function App() {
     setPlacedShapes(migratedShapes);
     setCellSize(savedCellSize);
     if (savedPrintSettings) setPrintSettings(savedPrintSettings);
+    if (savedAspectRatio) setAspectRatio(savedAspectRatio);
+    if (savedNumRow) setNumRow(savedNumRow);
   };
 
   // Start a new blank drawing
@@ -167,6 +165,20 @@ function App() {
                 >
                   Sign out
                 </button>
+                <SaveButton
+                  placedShapes={placedShapes}
+                  cellSize={cellSize}
+                  numRow={numRow}
+                  aspectRatio={aspectRatio}
+                  printSettings={printSettings}
+                  drawingId={currentDrawingId}
+                  drawingName={currentDrawingName}
+                  userId={user.uid}
+                  onSaved={(id, name) => {
+                    setCurrentDrawingId(id);
+                    setCurrentDrawingName(name);
+                  }}
+                />
                 <button
                   className="button preview-modal-toggle"
                   onClick={() => setPreviewOpen(true)}

@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import Shapes from "./shapes";
+import { render } from "react-dom";
 
 const ClickDrag = ({
   placedShapes,
@@ -27,6 +28,7 @@ const ClickDrag = ({
 
   const spawnShapes = Shapes(20);
   const shapes = Shapes(cellSize);
+  const shrink = 0.9;       // These must match the canvas-drawn shapes in print.jsx exactly.
 
   const canvasRef = useRef(null);
   const prevCellSizeRef = useRef(cellSize);
@@ -323,13 +325,19 @@ const ClickDrag = ({
   };
 
   // Helper component for rendering the SVG content of special shapes like Arc and heart
-  // These must match the canvas-drawn shapes in print.jsx exactly.
-  const renderShapeContent = (shapeInfo, size) => {
+
+  //for shapes that require SVG rendering (Arc, heart, stripedRect, stripedRect_2, triangle)
+  const renderShapeContent = (shapeInfo) => {
+  const originalWidth = shapeInfo.width;
+  const originalHeight = shapeInfo.height;
+  const shapeWidth = originalWidth * shrink;
+  const shapeHeight = originalHeight * shrink;
+  const gap = cellSize * (1-shrink) / 2; 
     if (shapeInfo.type === "Arc") {
-      const strokeW = shapeInfo.strokeWidth;
-      const r = size.width / 2 + strokeW / 2;
+      const strokeW = shapeWidth / 2;
+      const r = shapeInfo.strokeWidth + strokeW / 2;
       return (
-        <svg width={size.width} height={size.height} viewBox={`0 0 ${size.width} ${size.height}`} style={{ position: 'absolute', top: 0, left: 0 }}>
+        <svg width={originalWidth} height={originalWidth} viewBox={`0 0 ${originalWidth} ${originalHeight}`} style={{ position: 'absolute', top: `0`, left:`0` }}>
           <path
             d={`M ${r} 0 A ${r} ${r} 0 0 1 0 ${r}`}
             fill="none"
@@ -341,7 +349,7 @@ const ClickDrag = ({
     }
     if (shapeInfo.type === "heart") {
       return (
-        <svg viewBox="0 0 24 24" width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
+        <svg viewBox="0 0 24 24" width={originalWidth} height={originalHeight} style={{ position: 'absolute', top: 0, left: 0 }}>
           <path
             d={"M12.8993 3.73386L11.9975 4.63704L11.0912 3.73167C9.98254 2.62417 8.4789 2.00205 6.91108 2.00215C5.34326 2.00226 3.8397 2.62458 2.73115 3.73221C1.62261 4.83985 0.999897 6.34207 1 7.9084C1.0001 9.47474 1.62302 10.9769 2.7317 12.0844L11.4146 20.759C11.5692 20.9133 11.7789 21 11.9975 21C12.216 21 12.4257 20.9133 12.5804 20.759L21.2709 12.0822C22.3783 10.9744 23.0002 9.47282 23 7.90724C22.9998 6.34166 22.3775 4.8402 21.2698 3.73276C20.7203 3.18343 20.0679 2.74766 19.3498 2.45035C18.6316 2.15303 17.8619 2 17.0846 2C16.3072 2 15.5375 2.15303 14.8194 2.45035C14.1012 2.74766 13.4488 3.18453 12.8993 3.73386Z"}
             fill="var(--block-color)"
@@ -350,33 +358,49 @@ const ClickDrag = ({
       );
     }
     if (shapeInfo.type === "stripedRect") {
-      const stripeW = size.width / 5;
+      const stripeW = shapeWidth / 5;
       return (
-        <svg width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
+        <svg width={originalWidth} height={originalHeight} style={{ position: 'absolute', top: 0, left: 0 }}>
           {[0, 1, 2].map((i) => (
-            <rect key={i} x={stripeW * (i * 2)} y={0} width={stripeW} height={size.height} fill="var(--block-color)" />
+            <rect key={i} x={stripeW * (i * 2)} y={0} width={stripeW} height={shapeHeight + gap *2} fill="var(--block-color)" />
           ))}
         </svg>
       );
     }
     if (shapeInfo.type === "stripedRect_2") {
-      const stripeH = size.height / 5;
+      const stripeH = shapeHeight / 5;
       return (
-        <svg width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
+        <svg width={originalWidth} height={originalHeight} style={{ position: 'absolute', top: 0, left: 0 }}>
           {[0, 1, 2].map((i) => (
-            <rect key={i} x={0} y={stripeH * (i * 2)} width={size.width} height={stripeH} fill="var(--block-color)" />
+            <rect key={i} x={0} y={stripeH * (i * 2)} width={shapeWidth + gap *2} height={stripeH} fill="var(--block-color)" />
           ))}
         </svg>
       );
     }
     if (shapeInfo.type === "triangle") {
       return (
-        <svg width={size.width} height={size.height} viewBox={`0 0 ${size.width} ${size.height}`} style={{ position: 'absolute', top: 0, left: 0 }}>
-          <polygon points={`${size.width} 0, 0 0, 0 ${size.height}`} fill="var(--block-color)" />
+        <svg width={originalWidth} height={originalHeight} viewBox={`0 0 ${originalWidth} ${originalHeight}`} style={{ position: 'absolute', top: 0, left: 0 }}>
+          <polygon points={`${shapeWidth} 0, 0 0, 0 ${shapeHeight}`} fill="var(--block-color)" />
         </svg>
       )
     }
     return null;
+  };
+
+  //for regular shapes (square, rectangle, circle, quarter circle)
+  const renderRegularShape = (pos,shapeInfo) => {
+      const gap = cellSize * (1-shrink) / 2; //gap between blocks
+      const x = pos.cellX * cellSize + gap; // left 
+      const y = pos.cellY * cellSize + gap; //top
+      let  w = (shapeInfo.width) * shrink ;
+      let  h = (shapeInfo.height) * shrink;
+     if (shapeInfo.width === 2 * cellSize) {
+      // width needs to be adjusted for large square to fit 2 cells + the gap
+      w += gap * 2;
+     } if (shapeInfo.height === 2 * cellSize) {
+      h += gap * 2;
+     } 
+      return {x,y,w,h};
   };
 
   return (
@@ -407,15 +431,12 @@ const ClickDrag = ({
                   position: "relative",
                   width: `${shape.width}px`,
                   height: `${shape.height}px`,
-                  borderRadius: shape.type === "Arc" ? 0 : shape.borderRadius,
+                  borderRadius: shape.type === "Arc" ? 4 : shape.borderRadius,
                   backgroundColor: shape.type === "Arc" || shape.type === "heart" || shape.type === "stripedRect" || shape.type === "stripedRect_2" || shape.type === "triangle" ? "transparent" : undefined,
                 }}
               >
                 {(shape.type === "Arc" || shape.type === "heart" || shape.type === "stripedRect" || shape.type === "stripedRect_2" || shape.type === "triangle") &&
-                  renderShapeContent(shape, {
-                    width: shape.width,
-                    height: shape.height,
-                  })}
+                  renderShapeContent(shape)}
               </div>
             </div>
           ))}
@@ -431,7 +452,7 @@ const ClickDrag = ({
         <div className="canvas-inner">
 
         {/* render all the placed shapes */}
-        {placedShapes.map((pos, index) => (
+        {placedShapes.map((pos, index) => (    
           <div
             key={index}
             index={index}
@@ -442,10 +463,10 @@ const ClickDrag = ({
             }}
             onMouseDown={(e) => handleMouseDown(e, index, pos.type)}
             style={{
-              left: `${pos.cellX * cellSize}px`,
-              top: `${pos.cellY * cellSize}px`,
-              width: `${shapes[pos.type].width}px`,
-              height: `${shapes[pos.type].height}px`,
+              left: `${renderRegularShape(pos, shapes[pos.type]).x}px`,
+              top: `${renderRegularShape(pos, shapes[pos.type]).y}px`,
+              width: `${renderRegularShape(pos, shapes[pos.type]).w}px`,
+              height: `${renderRegularShape(pos, shapes[pos.type]).h}px`,
               borderRadius:
                 shapes[pos.type].type === "Arc"
                   ? 0
@@ -457,10 +478,7 @@ const ClickDrag = ({
             }}
           >
             {(shapes[pos.type].type === "Arc" || shapes[pos.type].type === "heart" || shapes[pos.type].type === "stripedRect" || shapes[pos.type].type === "stripedRect_2" || shapes[pos.type].type === "triangle") &&
-              renderShapeContent(shapes[pos.type], {
-                width: shapes[pos.type].width,
-                height: shapes[pos.type].height,
-              })}
+              renderShapeContent(shapes[pos.type])}
           </div>
         ))}
 

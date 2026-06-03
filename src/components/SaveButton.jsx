@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-function SaveButton({ placedShapes, cellSize, drawingId, drawingName, userId, onSaved }) {
+function SaveButton({ placedShapes, cellSize, numRow, aspectRatio, printSettings, drawingId, drawingName, userId, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+
+  const sanitize = (obj) =>
+    JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)));
 
   const handleSave = async () => {
     if (placedShapes.length === 0) {
@@ -19,8 +22,7 @@ function SaveButton({ placedShapes, cellSize, drawingId, drawingName, userId, on
       if (drawingId) {
         // Update existing drawing
         await setDoc(doc(db, 'drawings', drawingId), {
-          placedShapes,
-          cellSize,
+          ...sanitize({ placedShapes, cellSize, numRow, aspectRatio, printSettings: printSettings || {} }),
           updatedAt: serverTimestamp(),
           userId,
           name: drawingName || `Drawing ${new Date().toLocaleDateString()}`,
@@ -30,8 +32,7 @@ function SaveButton({ placedShapes, cellSize, drawingId, drawingName, userId, on
         // Create new drawing
         const name = `Drawing ${new Date().toLocaleDateString()}`;
         const docRef = await addDoc(collection(db, 'drawings'), {
-          placedShapes,
-          cellSize,
+          ...sanitize({ placedShapes, cellSize, numRow, aspectRatio, printSettings: printSettings || {} }),
           createdAt: serverTimestamp(),
           userId,
           name,
