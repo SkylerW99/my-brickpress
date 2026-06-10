@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from
 import { renderDesign } from './canvasRenderer';
 
 // Renders a small thumbnail preview of a drawing using canvas (with print effects)
-function DrawingThumbnail({ placedShapes, cellSize, gridNumber, thumbSize, aspectRatio,printSettings }) {
+function DrawingThumbnail({ placedShapes, cellSize, numRow, thumbSize, aspectRatio,printSettings }) {
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const [resolvedSize, setResolvedSize] = useState(0);
@@ -35,17 +35,19 @@ function DrawingThumbnail({ placedShapes, cellSize, gridNumber, thumbSize, aspec
     if (!canvas || resolvedSize === 0) return;
 
     const size = resolvedSize * (window.devicePixelRatio || 1);
+    const [arw, arh] = (aspectRatio?.value || '1 / 1').split('/').map(Number);
     canvas.width = size;
-    canvas.height = size // aspectRatio.value.split('/').map(Number).reduce((a, b) => a / b);
-    const ctx = canvas.getContext('2d');
-    const CELL = size / gridNumber;
+    canvas.height = size * (arh / arw);
 
-    renderDesign(ctx, size, size, {
-      CELL, cellSize, placedShapes,
+    const ctx = canvas.getContext('2d');
+    const CELL = canvas.height / numRow;
+
+    renderDesign(ctx, canvas.width, canvas.height, {
+      CELL, cellSize,placedShapes,
       bgColor, blockColors,
       bleed, bleedOpacity, distress, grain,
     });
-  }, [placedShapes, cellSize, resolvedSize, gridNumber, grain, bleed, bleedOpacity, distress, bgColor, blockColors]);
+  }, [placedShapes, cellSize, resolvedSize, numRow, aspectRatio, grain, bleed, bleedOpacity, distress, bgColor, blockColors]);
 
   useEffect(() => {
     const timer = setTimeout(renderCanvas, 80);
@@ -60,7 +62,6 @@ function DrawingThumbnail({ placedShapes, cellSize, gridNumber, thumbSize, aspec
       style={{
         position: 'relative',
         width: size,
-        aspectRatio: (aspectRatio?.value) || '1 / 1',
         borderRadius: 8,
         overflow: 'hidden',
         border: '1.5px solid var(--border-light)',
@@ -68,7 +69,7 @@ function DrawingThumbnail({ placedShapes, cellSize, gridNumber, thumbSize, aspec
     >
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ width: '100%', display: 'block' }}
       />
     </div>
   );

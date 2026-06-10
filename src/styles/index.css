@@ -914,14 +914,15 @@ button:focus-visible {
 }
 
 .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--space-lg);
-  width: min(100%, 1200px);
+  columns: 4 240px;
+  column-gap: var(--space-lg);
+  width: 100%;
   padding: var(--space-xs);
 }
 
 .gallery-card {
+  break-inside: avoid;
+  margin-bottom: var(--space-lg);
   border: 2px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: var(--space-md);

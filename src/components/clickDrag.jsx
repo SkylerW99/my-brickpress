@@ -44,7 +44,6 @@ const ClickDrag = ({
     const recalc = () => {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0) {
-      const oldCellSize = prevCellSizeRef.current;
       const numCol = aspectRatio.value === "1 / 1" ? numRow : aspectRatio.value === "4 / 6" ? Math.floor(numRow / 6 * 4) : Math.floor(numRow / 4 * 6);
       let newCellSize = (rect.width - borderWidth * 2) / numCol;
       // change the canvas width/height properties based on the aspect ratio

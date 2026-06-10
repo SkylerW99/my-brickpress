@@ -281,7 +281,7 @@ function Gallery({ onLoad, userId }) {
                 <DrawingThumbnail
                   placedShapes={drawing.placedShapes ?? []}
                   cellSize={drawing.cellSize ?? 20}
-                  gridNumber={drawing.numRow ?? drawing.gridNumber ?? 16}
+                  numRow={drawing.numRow ?? drawing.gridNumber ?? 16}
                   printSettings={drawing.printSettings ?? undefined}
                   aspectRatio={drawing.aspectRatio ?? { value: '1 / 1', label: '1 × 1' }}
                 />
