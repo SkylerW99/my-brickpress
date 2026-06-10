@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, deleteDoc, doc, orderBy, query, where, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, orderBy, query, where, getDoc,addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import DrawingThumbnail from './printedView/DrawingThumbnail';
 
@@ -250,6 +250,24 @@ function Gallery({ onLoad, userId }) {
     navigate('/');
   };
 
+  const handleDuplicate = async (id) => {
+    try {
+      const docRef = doc(db, 'drawings', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const newDocRef = await addDoc(collection(db, 'drawings'), {
+          ...data,
+          name: `${data.name} (Copy)`,
+          createdAt: serverTimestamp(),
+        });
+        setDrawings((prev) => [{ id: newDocRef.id, ...data }, ...prev]);
+      }
+    } catch (error) {
+      console.error('Error duplicating:', error);
+    }
+  };
+
   if (loading) {
     return <div className="App"><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Loading gallery...</p></div>;
   }
@@ -299,12 +317,20 @@ function Gallery({ onLoad, userId }) {
                     Open
                   </button>
                   <button
+                    className="button"
+                    onClick={() => handleDuplicate(drawing.id)}
+                    style={{ flex: 1, fontSize: '12px', padding: '6px' }}
+                  >
+                    Duplicate
+                  </button>
+                  <button
                     className="button-danger"
                     onClick={() => handleDelete(drawing.id)}
                     style={{ flex: 1, fontSize: '12px', padding: '6px' }}
                   >
                     Delete
                   </button>
+
                 </div>
               </div>
             ))}

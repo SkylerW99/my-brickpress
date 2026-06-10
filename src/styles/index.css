@@ -397,7 +397,7 @@ button:focus-visible {
   width: 100vw;
   height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .top-bar {
@@ -1202,3 +1202,55 @@ width:fit-content;
   justify-content: flex-start;  /* stack from top */
   gap: 20px;
 }
+
+.input{
+  padding: 8px 12px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  width: 80px;
+  color: var(--text-dark);
+  font-size: 0.9em;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:hover {
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.input:focus {
+  border-color: var(--ink-red);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.input-group{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-fields-container{
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.input-locked-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.input-locked-wrapper .input {
+  padding-right: 26px;
+}
+
+.input-lock-icon {
+  position: absolute;
+  right: 8px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
