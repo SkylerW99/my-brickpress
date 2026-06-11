@@ -51,9 +51,6 @@ function SaveButton({ placedShapes, cellSize, numRow, aspectRatio, printSettings
 
   return (
     <>
-      <button className="button" onClick={handleSave} disabled={saving}>
-        {saving ? 'Saving...' : '💾 Save'}
-      </button>
       {saveMessage && (
         <p className={`save-msg ${saveMessage.includes('Failed') ? 'error' : 'success'}`}>
           {saveMessage}

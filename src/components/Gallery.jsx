@@ -308,27 +308,28 @@ function Gallery({ onLoad, userId }) {
                   name={drawing.name || 'Untitled'}
                   onRename={handleRename}
                 />
-                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px', justifyContent: 'flex-end' }}>
                   <button
-                    className="button"
+                    className="button small-button"
                     onClick={() => handleLoad(drawing)}
-                    style={{ flex: 1, fontSize: '12px', padding: '6px' }}
                   >
                     Open
                   </button>
                   <button
-                    className="button"
-                    onClick={() => handleDuplicate(drawing.id)}
-                    style={{ flex: 1, fontSize: '12px', padding: '6px' }}
-                  >
+                    className="button-secondary small-button"
+                    onClick={() => handleDuplicate(drawing.id)}                  >
                     Duplicate
                   </button>
                   <button
-                    className="button-danger"
+                    className="button-secondary small-button"
                     onClick={() => handleDelete(drawing.id)}
-                    style={{ flex: 1, fontSize: '12px', padding: '6px' }}
                   >
-                    Delete
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
                   </button>
 
                 </div>

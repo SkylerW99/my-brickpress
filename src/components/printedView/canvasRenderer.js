@@ -49,7 +49,7 @@ function drawShapePath(ctx, params) {
   ctx.translate(-pivotX, -pivotY);
   ctx.beginPath();
 
-  if (shapeType === "circle") {
+  if (shapeType === "circle" || shapeType === "bigCircle") {
     const r = Math.min(w, h) / 2;
     ctx.arc(x + r, y + r, r, 0, Math.PI * 2);
     ctx.closePath();

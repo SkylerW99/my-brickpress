@@ -7,7 +7,7 @@
 function Shapes(cellSize) {
     return [
       { type: "square", height: cellSize, width: cellSize, x: 0, y: -50, borderRadius: 4, rotation: 0},
-      { type: "circle", height: cellSize, width: cellSize, x: 50, y: -50, borderRadius: "50%", rotation: 0},
+      { type: "circle", height: cellSize, width: cellSize, x: 50, y: -50, borderRadius: "50%", rotation: 0}, 
       { type: "triangle", height: cellSize, width: cellSize, x: 100, y: -50, borderRadius: 4, rotation: 0}, //triangle
       { type: "rectangle", height: cellSize * 2, width: cellSize, x: 150, y: -50 , borderRadius: 4, rotation: 0},
       { type: "rectangle_2", height: cellSize, width: cellSize * 2, x: 200, y: -50 , borderRadius: 4, rotation: 0},
@@ -17,6 +17,7 @@ function Shapes(cellSize) {
       { type: "heart", height: cellSize, width: cellSize, x: 400, y: -50, borderRadius: 4, rotation: 0}, 
       { type: "stripedRect", height: cellSize * 2, width: cellSize, x: 450, y: -50 , borderRadius: 4, rotation: 0},
       { type: "stripedRect_2", height: cellSize, width: cellSize*2, x: 500, y: -50 , borderRadius: 4, rotation: 0},
+      { type: "bigCircle", height: cellSize * 2, width: cellSize * 2, x: 550, y: -50, borderRadius: "50%", rotation: 0},
     ];
 }
 

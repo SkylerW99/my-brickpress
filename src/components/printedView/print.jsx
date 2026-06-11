@@ -6,8 +6,8 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
   const [bleed, setBleed] = useState(printSettings?.bleed ?? 1.5);
   const [bleedOpacity, setBleedOpacity] = useState(printSettings?.bleedOpacity ?? 0.15);
   const [distress, setDistress] = useState(printSettings?.distress ?? 0.3);
-  const [bgColor, setBgColor] = useState(printSettings?.bgColor ?? "#f5f2eb");
-  const [blockColors, setBlockColors] = useState(printSettings?.blockColors ?? "#c9a84e");
+  const [bgColor, setBgColor] = useState(printSettings?.bgColor ?? "#f1ede4");
+  const [blockColors, setBlockColors] = useState(printSettings?.blockColors ?? "#4363e5");
 
   // Notify parent whenever any setting changes
   useEffect(() => {
@@ -130,7 +130,12 @@ function Print({ placedShapes, cellSize, numRow, printSettings, aspectRatio, onS
       </div>
 
       <button className="button download-btn" onClick={handleDownload}>
-        ⬇ Download PNG
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px', verticalAlign: 'middle'}}>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download PNG
       </button>
     </div>
   );

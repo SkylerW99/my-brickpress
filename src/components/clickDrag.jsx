@@ -508,40 +508,50 @@ const ClickDrag = ({
         )}
 
         {/*show the setting menu for the selected shape */}
-        {showSettings !== null && placedShapes[showSettings] && (
+        {showSettings !== null && placedShapes[showSettings] && (() => {
+          const shape = placedShapes[showSettings];
+          const shapeType = shapes[shape.type];
+          const canvasWidth = canvasRef.current?.offsetWidth ?? 0;
+          const btnWidth = 90; // approximate button width in px
+          const shapeRight = shape.cellX * cellSize + shapeType.width;
+          const overflows = shapeRight + btnWidth > canvasWidth;
+          const btnLeft = overflows ? shape.cellX * cellSize - btnWidth : shapeRight;
+          return (
           <div
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <button
-              className="shape-action-btn delete"
-              onClick={removeShape}
-              style={{
-                position: "absolute",
-                left: `${placedShapes[showSettings].cellX * cellSize + shapes[placedShapes[showSettings].type].width}px`,
-                top: `${placedShapes[showSettings].cellY * cellSize}px`,
-                zIndex: 1000,
-              }}
-            >
-              ✕ Delete
-            </button>
-
-            {(shapes[placedShapes[showSettings].type].type === "Arc" || shapes[placedShapes[showSettings].type].type === "heart" || shapes[placedShapes[showSettings].type].type ==="QuarterCircle" || shapes[placedShapes[showSettings].type].type === "triangle") && (
+            {(shapeType.type === "Arc" || shapeType.type === "heart" || shapeType.type === "QuarterCircle" || shapeType.type === "triangle") && (
               <button
                 className="shape-action-btn"
                 onClick={rotateShape}
                 style={{
                   position: "absolute",
-                  left: `${placedShapes[showSettings].cellX * cellSize + shapes[placedShapes[showSettings].type].width}px`,
-                  top: `${placedShapes[showSettings].cellY * cellSize + 34}px`,
+                  left: `${btnLeft}px`,
+                  top: `${shape.cellY * cellSize}px`,
                   zIndex: 1000,
                 }}
               >
                 ↻ Rotate
               </button>
             )}
+
+              <button
+              className="shape-action-btn delete"
+              onClick={removeShape}
+              style={{
+                position: "absolute",
+                left: `${btnLeft}px`,
+                top: `${shape.cellY * cellSize + 34}px`,
+                zIndex: 1000,
+              }}
+            >
+              ✕ Delete
+            </button>
+
           </div>
-        )}
+          );
+        })()}
         </div>
       </div>
     </div>

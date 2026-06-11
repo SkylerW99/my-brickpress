@@ -17,9 +17,9 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [placedShapes, setPlacedShapes] = useState([]);
   const [cellSize, setCellSize] = useState(20);
-  const [numRow, setNumRow] = useState(16);
+  const [numRow, setNumRow] = useState(21);
   const [aspectRatio, setAspectRatio] = useState({
-      value: "1 / 1", label: "1 × 1"
+      value: "4 / 6", label: "4 × 6"
     });
   const [currentDrawingId, setCurrentDrawingId] = useState(null);
   const [currentDrawingName, setCurrentDrawingName] = useState(null);
@@ -121,6 +121,9 @@ function App() {
     setCurrentDrawingName(null);
     setPlacedShapes([]);
     setCellSize(20);
+    setNumRow(21);
+    setAspectRatio({ value: "4 / 6", label: "4 × 6" });
+    setPrintSettings(null);
   };
 
   const handleOpenGallery = async () => {
